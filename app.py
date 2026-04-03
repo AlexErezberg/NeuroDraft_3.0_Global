@@ -7,20 +7,22 @@ import io
 import plotly.graph_objects as go
 from docx import Document
 
+data = {}
+
 class NeuroDraftAssistant:
-    def __init__(self, matrix_data):
-        # Сохраняем всю матрицу в self.lib
-        self.lib = matrix_data
+def __init__(self, matrix_data):
+    self.lib = matrix_data
+    global data
+    data = matrix_data 
         
-        # Функция поиска теперь корректно принимает базу для поиска
-        def deep_find(data_source, target):
-            if isinstance(data_source, dict):
-                if target in data_source: 
-                    return data_source[target]
-                for v in data_source.values():
-                    found = deep_find(v, target)
-                    if found: return found
-            return None
+    # Твой старый код deep_find и прочее...
+    def deep_find(d, target):
+        if isinstance(d, dict):
+            if target in d: return d[target]
+            for v in d.values():
+                found = deep_find(v, target)
+                if found: return found
+        return None
 
         # Ищем базы в переданном matrix_data
         self.rv_db = deep_find(self.lib, "risk_verification")
