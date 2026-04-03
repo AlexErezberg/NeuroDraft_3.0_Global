@@ -9,15 +9,20 @@ from docx import Document
 
 class NeuroDraftAssistant:
     def __init__(self, matrix_data):
+        # Сохраняем всю матрицу в self.lib
         self.lib = matrix_data
-        # Глубокий радар для поиска баз (Риски, Векторы)
-        def deep_find(data, target):
-            if isinstance(data, dict):
-                if target in data: return data[target]
-                for v in data.values():
+        
+        # Функция поиска теперь корректно принимает базу для поиска
+        def deep_find(data_source, target):
+            if isinstance(data_source, dict):
+                if target in data_source: 
+                    return data_source[target]
+                for v in data_source.values():
                     found = deep_find(v, target)
                     if found: return found
             return None
+
+        # Ищем базы в переданном matrix_data
         self.rv_db = deep_find(self.lib, "risk_verification")
         self.sr_db = deep_find(self.lib, "suicide_risk")
         self.nv_db = deep_find(self.lib, "neuro_vectors")
