@@ -838,6 +838,19 @@ with st.sidebar:
                 st.download_button("📚 ГАЙД", f, "AppGuide.pdf", use_container_width=True)
         except: pass
 
+    # --- ВСТАВКА: ВЫБОР ЯЗЫКА ---
+    st.markdown("---")
+    # Английский по умолчанию (index=0), Русский в конце
+    lang = st.selectbox("🌐 LANGUAGE / ЯЗЫК", ["en", "es", "pt", "ru"], index=0, key="lang_sel")
+    
+    # Сразу тянем переводы заголовков из твоего массива massive-mulilang.json
+    ui = matrix.get("ui_labels", {})
+    status_h = ui.get("status_header", {}).get(lang, "STATUS")
+    results_h = ui.get("results_header", {}).get(lang, "RESULTS")
+    conclusion_h = ui.get("conclusion_header", {}).get(lang, "CONCLUSION")
+    recs_h = ui.get("recs_header", {}).get(lang, "RECOMMENDATIONS")
+    # ----------------------------
+
     st.header("📋 Пациент")
     
     fio = st.text_input("ФИО", "Иванов И.И.", key="fio_input")
