@@ -724,7 +724,7 @@ class NeuroDraftAssistant:
 # Загрузка JSON-аккумулятора
 @st.cache_data
 def load_matrix():
-    with open('expert_matrix мультиязычный.json', 'r', encoding='utf-8-sig') as f:
+    with open('massive-mulilang.json', 'r', encoding='utf-8-sig') as f:
         return json.load(f)
 
 matrix = load_matrix()
