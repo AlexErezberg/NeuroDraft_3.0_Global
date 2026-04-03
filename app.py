@@ -883,12 +883,12 @@ with st.sidebar:
         </div>
     """, unsafe_allow_html=True)
 
-# --- 3. ЦЕНТРАЛЬНОЕ ПОЛЕ (ФУНКЦИИ / ДОМЕНЫ) ---
-# Тянем заголовок секции из ui_labels (status_h мы определили в сайдбаре)
+# --- 3. ЦЕНТРАЛЬНОЕ ПОЛЕ (ФУНКЦИИ) ---
+#status_h мы подтянули из сайдбара
 st.subheader(f"📊 {status_h} (0-5)")
 
-# Динамический список меток из твоего массива massive-mulilang.json
-f_labels = [
+# Собираем названия доменов на выбранном языке [lang]
+f_names = [
     matrix.get("attention", {}).get("label", {}).get(lang, "Attention"),
     matrix.get("visual_gnosis", {}).get("label", {}).get(lang, "Visual Gnosis"),
     matrix.get("spatial", {}).get("label", {}).get(lang, "Spatial"),
@@ -902,10 +902,8 @@ f_labels = [
 ]
 
 scores = []
-
-# Отрисовка ползунков: теперь они "умные" и мультиязычные
-for i, label in enumerate(f_labels):
-    scores.append(st.slider(f"{i+1}. {label}", 0, 5, 0, key=f"s_{i}"))
+for i, name in enumerate(f_names):
+    scores.append(st.slider(f"{i+1}. {name}", 0, 5, 0, key=f"s_{i}"))
 
 # --- ФУНКЦИЯ ДИАЛОГОВОГО ОКНА ---
 @st.dialog("📄 ИТОГОВЫЙ ПРОТОКОЛ", width="large")
