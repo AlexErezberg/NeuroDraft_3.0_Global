@@ -743,9 +743,17 @@ def reset_app():
         if f"s_{i}" in st.session_state: st.session_state[f"s_{i}"] = 0
     if "adj_ms" in st.session_state: st.session_state["adj_ms"] = []
     if "tags_ms" in st.session_state: st.session_state["tags_ms"] = []
+    
+    # --- НОВЫЕ ПАРАМЕТРЫ ДЛЯ NEURODRAFT 3.0 ---
+    if "lang_sel" in st.session_state: st.session_state["lang_sel"] = "en"
+    if "moca_in" in st.session_state: st.session_state["moca_in"] = 30
+    if "mmse_in" in st.session_state: st.session_state["mmse_in"] = 30
+    if "gds_in" in st.session_state: st.session_state["gds_in"] = 0
+    # ------------------------------------------
+    
     st.rerun()
 
-st.set_page_config(page_title="Draft Web", layout="wide")
+st.set_page_config(page_title="NeuroDraft 3.0", layout="wide")
 
 import base64
 
