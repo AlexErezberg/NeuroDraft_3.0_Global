@@ -883,14 +883,29 @@ with st.sidebar:
         </div>
     """, unsafe_allow_html=True)
 
-# --- 3. ЦЕНТРАЛЬНОЕ ПОЛЕ (ФУНКЦИИ) ---
-st.subheader("📊 Функции (0-5)")
-f_names = ["Внимание", "Зрит.Гнозис", "Простр.Гнозис", "Дин.Праксис", "Кин.Праксис", "Констр.Праксис", "Счет", "Речь", "Память", "Мышление"]
+# --- 3. ЦЕНТРАЛЬНОЕ ПОЛЕ (ФУНКЦИИ / ДОМЕНЫ) ---
+# Тянем заголовок секции из ui_labels (status_h мы определили в сайдбаре)
+st.subheader(f"📊 {status_h} (0-5)")
+
+# Динамический список меток из твоего массива massive-mulilang.json
+f_labels = [
+    matrix.get("attention", {}).get("label", {}).get(lang, "Attention"),
+    matrix.get("visual_gnosis", {}).get("label", {}).get(lang, "Visual Gnosis"),
+    matrix.get("spatial", {}).get("label", {}).get(lang, "Spatial"),
+    matrix.get("dynamic_praxis", {}).get("label", {}).get(lang, "Dynamic Praxis"),
+    matrix.get("afferent_praxis", {}).get("label", {}).get(lang, "Afferent Praxis"),
+    matrix.get("cube", {}).get("label", {}).get(lang, "Visuoconstructive"),
+    matrix.get("calculation", {}).get("label", {}).get(lang, "Calculation"),
+    matrix.get("speech", {}).get("label", {}).get(lang, "Language"),
+    matrix.get("memory", {}).get("label", {}).get(lang, "Memory"),
+    matrix.get("thinking", {}).get("label", {}).get(lang, "Executive")
+]
+
 scores = []
 
-# УБРАЛИ КОЛОНКИ: теперь ползунки идут СТРОГО 1, 2, 3... без путаницы на смарте
-for i, name in enumerate(f_names):
-    scores.append(st.slider(f"{i+1}. {name}", 0, 5, 0, key=f"s_{i}"))
+# Отрисовка ползунков: теперь они "умные" и мультиязычные
+for i, label in enumerate(f_labels):
+    scores.append(st.slider(f"{i+1}. {label}", 0, 5, 0, key=f"s_{i}"))
 
 # --- ФУНКЦИЯ ДИАЛОГОВОГО ОКНА ---
 @st.dialog("📄 ИТОГОВЫЙ ПРОТОКОЛ", width="large")
