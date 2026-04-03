@@ -882,27 +882,33 @@ with st.sidebar:
             <p style="color: #555; font-size: 0.6em;">Commercial v85.6-STABLE</p>
         </div>
     """, unsafe_allow_html=True)
-
 # --- 3. ЦЕНТРАЛЬНОЕ ПОЛЕ (ДОМЕНЫ) ---
-st.subheader(f"🧠 {ui.get('status_header', {}).get(lang, 'NEUROCOGNITIVE DOMAINS')}")
+# Заголовок теперь всегда "НЕЙРОКОГНИТИВНЫЕ ДОМЕНЫ" на нужном языке
+domains_title = {
+    "ru": "НЕЙРОКОГНИТИВНЫЕ ДОМЕНЫ",
+    "en": "NEUROCOGNITIVE DOMAINS",
+    "es": "DOMINIOS NEUROCOGNITIVOS",
+    "pt": "DOMÍNIOS NEUROCÓGNITIVOS"
+}
+st.subheader(f"🧠 {domains_title.get(lang, 'NEUROCOGNITIVE DOMAINS')}")
 
-# Тянем ПОЛНЫЕ названия из твоего массива massive-mulilang.json
-# Если перевода нет - будет пусто, но в твоем массиве они точно есть
-f_names = [
-    matrix.get("attention", {}).get("label", {}).get(lang, ""),
-    matrix.get("visual_gnosis", {}).get("label", {}).get(lang, ""),
-    matrix.get("spatial", {}).get("label", {}).get(lang, ""),
-    matrix.get("dynamic_praxis", {}).get("label", {}).get(lang, ""),
-    matrix.get("afferent_praxis", {}).get("label", {}).get(lang, ""),
-    matrix.get("cube", {}).get("label", {}).get(lang, ""),
-    matrix.get("calculation", {}).get("label", {}).get(lang, ""),
-    matrix.get("speech", {}).get("label", {}).get(lang, ""),
-    matrix.get("memory", {}).get("label", {}).get(lang, ""),
-    matrix.get("thinking", {}).get("label", {}).get(lang, "")
+# Список ключей, как они забиты в твоем JSON (проверь регистр!)
+domain_keys = [
+    "attention", "visual_gnosis", "spatial", "dynamic_praxis", 
+    "afferent_praxis", "cube", "calculation", "speech", "memory", "thinking"
 ]
 
+f_names = []
+for k in domain_keys:
+    # Ищем: matrix -> ключ_домена -> label -> язык
+    name = matrix.get(k, {}).get("label", {}).get(lang)
+    if not name:
+        # Если не нашли, пробуем искать просто в matrix -> ключ_домена -> язык
+        name = matrix.get(k, {}).get(lang, k.upper())
+    f_names.append(name)
+
 scores = []
-# ВАЖНО: Добавляем lang в key, чтобы при смене языка Стримлит ПЕРЕРИСОВАЛ ползунок с новым именем
+# key=f"s_{i}_{lang}" - ОБЯЗАТЕЛЬНО для смены языка на экране
 for i, name in enumerate(f_names):
     scores.append(st.slider(f"{i+1}. {name}", 0, 5, 0, key=f"s_{i}_{lang}"))
 
