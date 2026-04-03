@@ -7,7 +7,7 @@ import io
 import plotly.graph_objects as go
 from docx import Document
 
-class NeuroExpertMaster:
+class NeuroDraftAssistant:
     def __init__(self, matrix_data):
         self.lib = matrix_data
         # Глубокий радар для поиска баз (Риски, Векторы)
@@ -93,7 +93,7 @@ class NeuroExpertMaster:
 
             # Критичные для рисков и векторов библиотеки
             rv_lib = concl.get("risk_verification", self.lib.get("risk_verification", {}))
-            nv_lib = concl.get("neuro_vectors", self.lib.get("neuro_vectors", {}))
+            nv_lib = concl.get("_vectors", self.lib.get("_vectors", {}))
 
             # Остальное
             behav_db = self.lib.get("behavioral_patterns", self.lib.get("behavioral_patterns", {}))
@@ -200,9 +200,9 @@ class NeuroExpertMaster:
             # 1. ОБНОВЛЕННЫЙ СЛОВАРЬ ШАБЛОНОВ (RU/EN/ES/PT)
             scr_tpl = {
                 "ru": "Результаты скрининга (MoCA: {m}, MMSE: {mm}, GDS: {g}) подтверждают {s} когнитивное снижение{d}.",
-                "en": "Screening results (MoCA: {m}, MMSE: {mm}, GDS: {g}) corroborate {s} neurocognitive impairment{d}.",
-                "es": "Los resultados del screening (MoCA: {m}, MMSE: {mm}, GDS: {g}) confirman un deterioro neurocognitivo {s}{d}.",
-                "pt": "Os resultados do rastreio (MoCA: {m}, MMSE: {mm}, GDS: {g}) confirmam um compromisso neurocognitivo {s}{d}."
+                "en": "Screening results (MoCA: {m}, MMSE: {mm}, GDS: {g}) corroborate {s} cognitive impairment{d}.",
+                "es": "Los resultados del screening (MoCA: {m}, MMSE: {mm}, GDS: {g}) confirman un deterioro cognitivo {s}{d}.",
+                "pt": "Os resultados do rastreio (MoCA: {m}, MMSE: {mm}, GDS: {g}) confirmam um compromisso cognitivo {s}{d}."
             }
 
             # 2. СТЕПЕНИ ТЯЖЕСТИ
@@ -249,14 +249,14 @@ class NeuroExpertMaster:
                 # Карта под твои f_keys (0-9)
                 correlations = [
                     ("frontal", [0, 3, 9], 4, {
-                        "en": "Frontal neuroimaging findings correlate with identified executive dysfunction and impaired motor programming.",
+                        "en": "Frontal imaging findings correlate with identified executive dysfunction and impaired motor programming.",
                         "es": "Los hallazgos frontales correlacionan con la disfunción ejecutiva identificada y la alteración de la programación motora.",
-                        "pt": "Os achados de neuroimagem frontal correlacionam-se com a disfunción ejecutiva identificada."
+                        "pt": "Os achados de imagem frontal correlacionam-se com a disfunción ejecutiva identificada."
                     }),
                     ("temporal", [7, 8], 3, {
-                        "en": "Temporal neuroimaging findings correlate with identified semantic disintegration and mnemonic deficits.",
+                        "en": "Temporal imaging findings correlate with identified semantic disintegration and mnemonic deficits.",
                         "es": "Los hallazgos temporales correlacionan con la desintegración semántica и los déficits mnésicos.",
-                        "pt": "Os achados de neuroimagem temporal correlacionam-se com a desintegração semântica."
+                        "pt": "Os achados de imagem temporal correlacionam-se com a desintegração semântica."
                     }),
                     ("parietal", [2, 4, 6], 4, {
                         "en": "Parietal structural findings match the observed visuospatial fragmentation and somatosensory deficits.",
@@ -264,7 +264,7 @@ class NeuroExpertMaster:
                         "pt": "Os achados estruturais parietais coincidem com a fragmentação visoespacial."
                     }),
                     ("occipital", [1, 2], 4, {
-                        "en": "Occipital neuroimaging findings correlate with identified visual processing deficits and perceptual fragmentation.",
+                        "en": "Occipital imaging findings correlate with identified visual processing deficits and perceptual fragmentation.",
                         "es": "Los hallazgos occipitales correlacionan con los déficits de procesamiento visual.",
                         "pt": "Os achados occipitais correlacionam-se com os déficits de processamento visual."
                     }),
@@ -279,7 +279,7 @@ class NeuroExpertMaster:
                         "pt": "Os achados no corpo caloso coincidem com a síndrome de desconexão calosa."
                     }),
                     ("cerebellar", [0, 9], 3, {
-                        "en": "Cerebellar structural changes match the identified Dysmetria of Thought (CCAS), correlating with executive and neurodynamic instability.",
+                        "en": "Cerebellar structural changes match the identified Dysmetria of Thought (CCAS), correlating with executive and dynamic instability.",
                         "es": "Los hallazgos cerebelosos coinciden con la dismetría del pensamiento (CCAS).",
                         "pt": "Os achados cerebelares coincidem com a dismetria do pensamento (CCAS)."
                     }),
@@ -368,9 +368,9 @@ class NeuroExpertMaster:
                 # Кейс: Тотальный завал (Деменция/МСА)
                 lead_phrase = {
                     "ru": "Клиническая картина отражает системный когнитивный распад с диффузным дефицитом во всех функциональных доменах.",
-                    "en": "The clinical picture reflects a systemic neurocognitive collapse with profound deficits across all functional domains.",
-                    "es": "El cuadro clínico refleja un colapso neurocognitivo sistémico con déficits profundos en todos los dominios funcionales.",
-                    "pt": "O quadro clínico reflete um colapso neurocognitivo sistêmico com déficits profundos em todos os domínios funcionais."
+                    "en": "The clinical picture reflects a systemic cognitive collapse with profound deficits across all functional domains.",
+                    "es": "El cuadro clínico refleja un colapso cognitivo sistémico con déficits profundos en todos los dominios funcionales.",
+                    "pt": "O quadro clínico reflete um colapso cognitivo sistêmico com déficits profundos em todos os domínios funcionais."
                 }.get(lang)
             elif peaks:
                 # Кейс: Выделенные пики (называем не более двух главных)
@@ -410,7 +410,7 @@ class NeuroExpertMaster:
 
             f_a = []
             # УБИРАЕМ "+ b_label" ОТСЮДА! Пусть будет просто голый текст фактора.
-            if (s[0]+s[6]+b1 >= 4): f_a.append(self.apply_gender(factors_db.get('neurodynamic',''), gen, is_endo, lang).rstrip('.'))
+            if (s[0]+s[6]+b1 >= 4): f_a.append(self.apply_gender(factors_db.get('dynamic',''), gen, is_endo, lang).rstrip('.'))
             if (s[1]+s[2]+s[8]+b2 >= 3): f_a.append(self.apply_gender(factors_db.get('spatial',''), gen, is_endo, lang).rstrip('.'))
             if (s[3]+s[9]+b3 >= 3): f_a.append(self.apply_gender(factors_db.get('regulatory',''), gen, is_endo, lang).rstrip('.'))
 
@@ -735,7 +735,7 @@ def reset_app():
     if "tags_ms" in st.session_state: st.session_state["tags_ms"] = []
     st.rerun()
 
-st.set_page_config(page_title="NeuroDraft Web", layout="wide")
+st.set_page_config(page_title="Draft Web", layout="wide")
 
 import base64
 
@@ -765,7 +765,7 @@ st.markdown(f"""
         <img src="data:image/jpeg;base64,{img_base64}" style="width: 40px; height: 40px; border-radius: 5px;">
         <div style="display: flex; flex-direction: column;">
             <h2 style="color: #ffffff; margin: 0; font-family: 'Segoe UI'; font-size: 1.4em; line-height: 1;">
-                <span style="color: #FF4B4B;">Neuro</span>Expert
+                <span style="color: #FF4B4B;"></span>Expert
             </h2>
             <span style="color: #808495; font-style: italic; font-size: 0.75em;">Комплексная система синдромального нейропсихологического анализа</span>
         </div>
@@ -780,7 +780,7 @@ if "auth" not in st.session_state:
 
 # --- 2. ТЕПЕРЬ ПРОВЕРЯЕМ ---
 if not st.session_state["auth"]:
-    # Твоя монолитная шапка (NeuroDraft)
+    # Твоя монолитная шапка (Draft)
     # ... (вставь сюда свой блок с градиентом и мозгом) ...
     
     pwd_input = st.text_input("🔑 Доступ к системе:", type="password")
@@ -845,7 +845,7 @@ with st.sidebar:
     st.markdown("""
         <div style="background-color: #1c1f26; padding: 10px; border-radius: 10px; border: 1px solid #3d404a; text-align: center; margin-top: 20px;">
             <p style="color: #808495; font-size: 0.7em; margin: 0;">© 2026 Все права защищены</p>
-            <p style="color: #FF4B4B; font-weight: bold; font-size: 0.9em; margin: 5px 0;">NEURO-EXPERT ENGINE</p>
+            <p style="color: #FF4B4B; font-weight: bold; font-size: 0.9em; margin: 5px 0;">NeuroDraftAssistant</p>
             <p style="color: #ffffff; font-size: 0.75em; margin: 0;">Разработка и методология:<br><b>Cognicore Systems</b></p>
             <hr style="margin: 8px 0; border: 0.5px solid #333;">
             <p style="color: #555; font-size: 0.6em;">Commercial v85.6-STABLE</p>
@@ -941,7 +941,7 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
 # --- 5. САМА КНОПКА ЗАПУСКА (В САМОМ НИЗУ) ---
 if st.button("🚀 СГЕНЕРИРОВАТЬ ПРОТОКОЛ"):
     full_code = f"{p_type}{p_gen}/{''.join(map(str, scores))}"
-    engine = NeuroDraft Assistant(matrix)
+    engine = NeuroDraftAssistant(matrix)
     report = engine.run(full_code, ",".join(presets), ",".join(selected_tags))
     
     # ВНИМАНИЕ: Передаем ВСЕ ПАРАМЕТРЫ, чтобы график и лейблы их увидели
