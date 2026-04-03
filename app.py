@@ -719,7 +719,7 @@ class NeuroExpertMaster:
 # Загрузка JSON-аккумулятора
 @st.cache_data
 def load_matrix():
-    with open('expert_matrix.json', 'r', encoding='utf-8-sig') as f:
+    with open('expert_matrix мультиязычный.json', 'r', encoding='utf-8-sig') as f:
         return json.load(f)
 
 matrix = load_matrix()
@@ -735,7 +735,7 @@ def reset_app():
     if "tags_ms" in st.session_state: st.session_state["tags_ms"] = []
     st.rerun()
 
-st.set_page_config(page_title="NeuroExpert Web", layout="wide")
+st.set_page_config(page_title="NeuroDraft Web", layout="wide")
 
 import base64
 
@@ -780,7 +780,7 @@ if "auth" not in st.session_state:
 
 # --- 2. ТЕПЕРЬ ПРОВЕРЯЕМ ---
 if not st.session_state["auth"]:
-    # Твоя монолитная шапка (NeuroExpert)
+    # Твоя монолитная шапка (NeuroDraft)
     # ... (вставь сюда свой блок с градиентом и мозгом) ...
     
     pwd_input = st.text_input("🔑 Доступ к системе:", type="password")
@@ -941,7 +941,7 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
 # --- 5. САМА КНОПКА ЗАПУСКА (В САМОМ НИЗУ) ---
 if st.button("🚀 СГЕНЕРИРОВАТЬ ПРОТОКОЛ"):
     full_code = f"{p_type}{p_gen}/{''.join(map(str, scores))}"
-    engine = NeuroExpertMaster(matrix)
+    engine = NeuroDraft Assistant(matrix)
     report = engine.run(full_code, ",".join(presets), ",".join(selected_tags))
     
     # ВНИМАНИЕ: Передаем ВСЕ ПАРАМЕТРЫ, чтобы график и лейблы их увидели
