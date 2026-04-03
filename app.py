@@ -882,17 +882,13 @@ with st.sidebar:
             <p style="color: #555; font-size: 0.6em;">Commercial v85.6-STABLE</p>
         </div>
     """, unsafe_allow_html=True)
-# --- 3. ЦЕНТРАЛЬНОЕ ПОЛЕ (ДОМЕНЫ) ---
-# Заголовок теперь всегда "НЕЙРОКОГНИТИВНЫЕ ДОМЕНЫ" на нужном языке
-domains_title = {
-    "ru": "НЕЙРОКОГНИТИВНЫЕ ДОМЕНЫ",
-    "en": "NEUROCOGNITIVE DOMAINS",
-    "es": "DOMINIOS NEUROCOGNITIVOS",
-    "pt": "DOMÍNIOS NEUROCÓGNITIVOS"
-}
-st.subheader(f"🧠 {domains_title.get(lang, 'NEUROCOGNITIVE DOMAINS')}")
 
-# Список ключей, как они забиты в твоем JSON (проверь регистр!)
+# --- 3. ЦЕНТРАЛЬНОЕ ПОЛЕ (НЕЙРОКОГНИТИВНЫЕ ДОМЕНЫ) ---
+# Заголовок секции подтягиваем из твоих ui_labels
+domains_title = ui.get('status_header', {}).get(lang, 'NEUROCOGNITIVE DOMAINS')
+st.subheader(f"🧠 {domains_title}")
+
+# Ключи из твоего JSON (проверь, чтобы в массиве они были именно такие)
 domain_keys = [
     "attention", "visual_gnosis", "spatial", "dynamic_praxis", 
     "afferent_praxis", "cube", "calculation", "speech", "memory", "thinking"
@@ -900,15 +896,13 @@ domain_keys = [
 
 f_names = []
 for k in domain_keys:
-    # Ищем: matrix -> ключ_домена -> label -> язык
-    name = matrix.get(k, {}).get("label", {}).get(lang)
-    if not name:
-        # Если не нашли, пробуем искать просто в matrix -> ключ_домена -> язык
-        name = matrix.get(k, {}).get(lang, k.upper())
-    f_names.append(name)
+    # Тянем ПОЛНОЕ название: matrix -> ключ -> label -> lang
+    # Если вдруг ключа нет - выведет сам ключ капсом (для отладки)
+    val = matrix.get(k, {}).get("label", {}).get(lang, k.upper())
+    f_names.append(val)
 
 scores = []
-# key=f"s_{i}_{lang}" - ОБЯЗАТЕЛЬНО для смены языка на экране
+# ВАЖНО: Добавляем _{lang} в key, чтобы Стримлит ПЕРЕРИСОВАЛ ползунок с новым длинным именем
 for i, name in enumerate(f_names):
     scores.append(st.slider(f"{i+1}. {name}", 0, 5, 0, key=f"s_{i}_{lang}"))
 
