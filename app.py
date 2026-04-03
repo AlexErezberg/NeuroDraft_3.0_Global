@@ -10,29 +10,32 @@ from docx import Document
 data = {}
 
 class NeuroDraftAssistant:
-def __init__(self, matrix_data):
-    self.lib = matrix_data
-    global data
-    data = matrix_data 
+    def __init__(self, matrix_data):
+        self.lib = matrix_data
+        # Глубокий радар для поиска баз (Риски, Векторы)
+        def deep_find(data_source, target):
+            if isinstance(data_source, dict):
+                if target in data_source: 
+                    return data_source[target]
+                for v in data_source.values():
+                    found = deep_find(v, target)
+                    if found: return found
+            return None
         
-    # Твой старый код deep_find и прочее...
-    def deep_find(d, target):
-        if isinstance(d, dict):
-            if target in d: return d[target]
-            for v in d.values():
-                found = deep_find(v, target)
-                if found: return found
-        return None
-
-        # Ищем базы в переданном matrix_data
         self.rv_db = deep_find(self.lib, "risk_verification")
         self.sr_db = deep_find(self.lib, "suicide_risk")
         self.nv_db = deep_find(self.lib, "neuro_vectors")
 
     def run(self, code_str, pr_in="", t_in="", lang='ru', moca=None, mmse=None, gds=None, mri=""):
+        # Прокидываем переменную data для старой логики
+        data = self.lib
         try:
             head, s_raw = code_str.split('/')
             raw_typ = head.rstrip('мж')
+            # Дальше твой оригинальный код с отступом 12 пробелов
+            
+        except Exception as e:
+            return f"❌ Ошибка в run: {e}"
 
         except Exception as e:
             return f"❌ Ошибка в run: {e}"
@@ -772,9 +775,9 @@ st.markdown(f"""
         <img src="data:image/jpeg;base64,{img_base64}" style="width: 40px; height: 40px; border-radius: 5px;">
         <div style="display: flex; flex-direction: column;">
             <h2 style="color: #ffffff; margin: 0; font-family: 'Segoe UI'; font-size: 1.4em; line-height: 1;">
-                <span style="color: #FF4B4B;"></span>Expert
+                <span style="color: #FF4B4B;"></span>NeuroDraft
             </h2>
-            <span style="color: #808495; font-style: italic; font-size: 0.75em;">Комплексная система синдромального нейропсихологического анализа</span>
+            <span style="color: #808495; font-style: italic; font-size: 0.75em;">Comprehensive system of syndromic neuropsychological analysis</span>
         </div>
     </div>
 """, unsafe_allow_html=True)
