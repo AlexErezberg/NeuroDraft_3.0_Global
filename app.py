@@ -883,27 +883,28 @@ with st.sidebar:
         </div>
     """, unsafe_allow_html=True)
 
-# --- 3. ЦЕНТРАЛЬНОЕ ПОЛЕ (ФУНКЦИИ) ---
-#status_h мы подтянули из сайдбара
-st.subheader(f"📊 {status_h} (0-5)")
+# --- 3. ЦЕНТРАЛЬНОЕ ПОЛЕ (ДОМЕНЫ) ---
+st.subheader(f"🧠 {ui.get('status_header', {}).get(lang, 'NEUROCOGNITIVE DOMAINS')}")
 
-# Собираем названия доменов на выбранном языке [lang]
+# Тянем ПОЛНЫЕ названия из твоего массива massive-mulilang.json
+# Если перевода нет - будет пусто, но в твоем массиве они точно есть
 f_names = [
-    matrix.get("attention", {}).get("label", {}).get(lang, "Attention"),
-    matrix.get("visual_gnosis", {}).get("label", {}).get(lang, "Visual Gnosis"),
-    matrix.get("spatial", {}).get("label", {}).get(lang, "Spatial"),
-    matrix.get("dynamic_praxis", {}).get("label", {}).get(lang, "Dynamic Praxis"),
-    matrix.get("afferent_praxis", {}).get("label", {}).get(lang, "Afferent Praxis"),
-    matrix.get("cube", {}).get("label", {}).get(lang, "Visuoconstructive"),
-    matrix.get("calculation", {}).get("label", {}).get(lang, "Calculation"),
-    matrix.get("speech", {}).get("label", {}).get(lang, "Language"),
-    matrix.get("memory", {}).get("label", {}).get(lang, "Memory"),
-    matrix.get("thinking", {}).get("label", {}).get(lang, "Executive")
+    matrix.get("attention", {}).get("label", {}).get(lang, ""),
+    matrix.get("visual_gnosis", {}).get("label", {}).get(lang, ""),
+    matrix.get("spatial", {}).get("label", {}).get(lang, ""),
+    matrix.get("dynamic_praxis", {}).get("label", {}).get(lang, ""),
+    matrix.get("afferent_praxis", {}).get("label", {}).get(lang, ""),
+    matrix.get("cube", {}).get("label", {}).get(lang, ""),
+    matrix.get("calculation", {}).get("label", {}).get(lang, ""),
+    matrix.get("speech", {}).get("label", {}).get(lang, ""),
+    matrix.get("memory", {}).get("label", {}).get(lang, ""),
+    matrix.get("thinking", {}).get("label", {}).get(lang, "")
 ]
 
 scores = []
+# ВАЖНО: Добавляем lang в key, чтобы при смене языка Стримлит ПЕРЕРИСОВАЛ ползунок с новым именем
 for i, name in enumerate(f_names):
-    scores.append(st.slider(f"{i+1}. {name}", 0, 5, 0, key=f"s_{i}"))
+    scores.append(st.slider(f"{i+1}. {name}", 0, 5, 0, key=f"s_{i}_{lang}"))
 
 # --- ФУНКЦИЯ ДИАЛОГОВОГО ОКНА ---
 @st.dialog("📄 ИТОГОВЫЙ ПРОТОКОЛ", width="large")
