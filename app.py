@@ -908,72 +908,76 @@ scores = []
 for i, name in enumerate(f_names):
     scores.append(st.slider(f"{i+1}. {name}", 0, 5, 0, key=f"s_{i}_{lang}"))
 
-# --- ФУНКЦИЯ ДИАЛОГОВОГО ОКНА (ИСПРАВЛЕННАЯ) ---
+# --- ФУНКЦИЯ ДИАЛОГОВОГО ОКНА (ТВОЙ ОРИГИНАЛ) ---
 @st.dialog("📄 FINAL PROTOCOL", width="large")
 def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, scores, f_names, lang):
-    # 1. ЛОГИКА ЯДРА
+    # 1. ЛОГИКА ЯДРА (ТВОЙ ОРИГИНАЛ)
     core_label = "Org"
     d_presets = ["Дког", "Дгор", "Дгорсом", "Дсом", "Дтр"]
-    # Приводим к нижнему регистру для надежного поиска
-    presets_lower = [p.lower() for p in presets]
-    
-    if p_type in ["9", "Дгэ"] or any(p.lower() in presets_lower for p in d_presets): 
-        core_label = "D"
+    has_d_preset = any(p in presets for p in d_presets)
+    if p_type in ["9", "Дгэ"] or has_d_preset: core_label = "D"
     elif p_type == "8": core_label = "Sch"
     elif p_type in ["0", "0т", "0*", "0+", "0-", "00"]: core_label = "N"
 
-    # 2. БУСТЕРЫ
+    # 2. БУСТЕРЫ (ТВОЙ ОРИГИНАЛ)
     is_organ = p_type in ["1", "2", "3", "4", "5"]
-    b1 = 3 if any(p.lower() in ["н", "апат", "асте"] for p in presets_lower) and is_organ else 0
-    b2 = 3 if any(p.lower() in ["асенс", "ааф", "аак", "асем", "апркин", "апркон", "агнп", "агнл", "неглект"] for p in presets_lower) and is_organ else 0
-    b3 = 3 if any(p.lower() in ["праврег", "леврег", "аэф", "апрдин"] for p in presets_lower) and is_organ else 0
+    b1 = 3 if any(p in ["н", "Апат", "асте"] for p in presets) and is_organ else 0
+    b2 = 3 if any(p in ["Асенс", "Ааф", "Аак", "Асем", "Апркин", "Апркон", "АгнП", "АгнЛ", "неглект"] for p in presets) and is_organ else 0
+    b3 = 3 if any(p in ["праврег", "леврег", "Аэф", "Апрдин"] for p in presets) and is_organ else 0
 
-    # 3. ГРАФИК
-    fig = go.Figure(data=go.Scatterpolar(
-        r=scores + [scores[0]],
-        theta=f_names + [f_names[0]],
-        fill='toself', fillcolor='rgba(255, 75, 75, 0.3)', line=dict(color='#FF4B4B', width=2)
+    # 3. ГРАФИК (ИСПРАВЛЕНО ТЕХНИЧЕСКИ: r = scores + [scores[0]])
+    fig = go.Figure()
+    fig.add_trace(go.Scatterpolar(
+        r = scores + [scores[0]],       # Замыкаем круг ПЕРВЫМ баллом
+        theta = f_names + [f_names[0]], # Замыкаем круг ПЕРВЫМ названием
+        fill='toself',
+        fillcolor='rgba(255, 75, 75, 0.3)',
+        line=dict(color='#FF4B4B', width=2)
     ))
     fig.update_layout(
-        polar=dict(radialaxis=dict(visible=True, range=[0, 5])),
-        showlegend=False, height=400, paper_bgcolor='rgba(0,0,0,0)',
-        annotations=[dict(x=0.5, y=0.5, text=core_label, showarrow=False, font=dict(size=32, color="#FF4B4B"))]
+        polar=dict(radialaxis=dict(visible=True, range=[0, 5], tickfont=dict(color="#808495")), 
+                   angularaxis=dict(tickfont=dict(size=10, color="white"))),
+        showlegend=False, height=400, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+        annotations=[dict(x=0.5, y=0.5, text=core_label, showarrow=False, font=dict(size=32, color="#FF4B4B", family="Arial Black"))]
     )
 
-    # 4. РАЗМЕТКА
-    c_bl, c_ch, c_nt = st.columns([0.25, 0.5, 0.25])
-    
-    blk_list = {
-        "ru": ["I: Энергия", "II: Прием", "III: Контроль"],
-        "en": ["Unit I: Arousal", "Unit II: Sensory", "Unit III: Exec."]
-    }.get(lang, ["Unit I", "Unit II", "Unit III"])
+    # 4. РАЗМЕТКА (МУЛЬТИЛЕНГ БЕЗ ПОТЕРИ ЛОГИКИ)
+    ui_bl = {"ru": "🧠 БЛОКИ:", "en": "🧠 UNITS:", "es": "🧠 UNIDADES:", "pt": "🧠 UNIDADES:"}.get(lang, "UNITS:")
+    ui_nt = {"ru": "🔎 СЕТИ:", "en": "🔎 SYNDROMES:", "es": "🔎 SÍNDROMES:", "pt": "🔎 SÍNDROMES:"}.get(lang, "SYNDROMES:")
+    blk_names = {
+        "ru": ["БЛОК I", "БЛОК II", "БЛОК III"],
+        "en": ["UNIT I", "UNIT II", "UNIT III"]
+    }.get(lang, ["UNIT I", "UNIT II", "UNIT III"])
+
+    c_bl, c_ch, c_nt = st.columns([0.2, 0.6, 0.2])
 
     with c_bl:
-        st.write("**🧠 UNITS:**")
-        # Исправленные индексы и логика активности
-        active_states = [
-            (scores[0] + scores[6] + b1 >= 3), # Блок 1
-            (scores[1] + scores[2] + scores[5] + b2 >= 3), # Блок 2
-            (scores[3] + scores[9] + b3 >= 3)  # Блок 3
+        st.write(f"**{ui_bl}**")
+        # ТВОИ ОРИГИНАЛЬНЫЕ ФОРМУЛЫ
+        blks = [
+            (blk_names[0], scores[0] + scores[6] + b1 >= 3),
+            (blk_names[1], scores[1] + scores[2] + scores[5] + b2 >= 3),
+            (blk_names[2], scores[3] + scores[9] + b3 >= 3)
         ]
-        for i, active in enumerate(active_states):
+        for name, active in blks:
             bg = "#FF4B4B" if active else "#1c1f26"
-            st.markdown(f'<div style="background:{bg}; color:white; padding:8px; border-radius:5px; margin-bottom:5px; text-align:center; font-weight:bold; font-size:0.7em;">{blk_list[i]}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="background:{bg}; color:white; padding:8px; border-radius:5px; margin-bottom:5px; text-align:center; font-weight:bold; font-size:0.75em; border:1px solid #333;">{name}</div>', unsafe_allow_html=True)
 
     with c_ch:
         st.plotly_chart(fig, use_container_width=True)
 
     with c_nt:
-        st.write("**🔎 SYNDROMES:**")
-        # Сети: проверяем наличие кода в выбранных пресетах (без учета регистра)
-        nets = {"ДЭП":"Vascular", "МСА":"MSA", "МКАС":"CBS", "ТАЛАМ":"Thalamic", "РЕТИК":"Reticular", "СТРИАР":"Striatal"}
-        for code_key, label in nets.items():
-            is_act = any(p.upper() == code_key.upper() for p in presets)
-            bg = "#FF4B4B" if is_act else "#1c1f26"
-            st.markdown(f'<div style="background:{bg}; color:white; padding:4px; border-radius:5px; margin-bottom:4px; text-align:center; font-size:0.65em; font-weight:bold;">{label}</div>', unsafe_allow_html=True)
+        st.write(f"**{ui_nt}**")
+        networks = ["ДЭП", "МСА", "МКАС", "ТАЛАМ", "РЕТИК", "СТРИАР", "МПС"]
+        for net in networks:
+            is_active = any(p.upper() == net.upper() for p in presets)
+            bg = "#FF4B4B" if is_active else "#1c1f26"
+            label = net if lang == 'ru' else net # Здесь можно добавить перевод
+            st.markdown(f'<div style="background:{bg}; color:white; padding:4px; border-radius:5px; margin-bottom:4px; text-align:center; font-size:0.7em; font-weight:bold; border:1px solid #333;">{label}</div>', unsafe_allow_html=True)
 
+    st.markdown("---")
     st.text_area("REPORT:", report_text, height=300)
-    if st.button("❌ CLOSE", use_container_width=True): st.rerun()
+    if st.button("❌ EXIT", use_container_width=True): st.rerun()
         
 # --- 5. САМА КНОПКА ЗАПУСКА ---
 btn_label = "🚀 GENERATE REPORT" if lang != 'ru' else "🚀 СГЕНЕРИРОВАТЬ ПРОТОКОЛ"
