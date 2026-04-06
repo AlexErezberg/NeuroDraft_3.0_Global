@@ -709,35 +709,6 @@ class NeuroDraftAssistant:
             )
             return final_report
 
-            # --- ФИНАЛЬНАЯ СБОРКА UI И ВЫВОД ---
-            ui = self.lib.get("ui_labels", {})
-
-            r_label_dict = recom_db.get("label", {})
-            r_h = r_label_dict.get(lang, ui.get('recommendations_header', {}).get(lang, "RECOMMENDATIONS"))
-
-            h1 = ui.get('status_header', {}).get(lang, 'MSE')
-            h2 = ui.get('results_header', {}).get(lang, 'PROFILE')
-            h3 = ui.get('conclusion_header', {}).get(lang, 'SUMMARY')
-
-            # Склеиваем рекомендации (без ** и один раз)
-            rec_text = ""
-            if unique_res:
-                rec_text = f"{r_h.upper()}:\n" + "\n\n".join(unique_res)
-
-            # Собираем итоговый текст заключения (все блоки из final)
-            res_summary = " ".join([p.strip() for p in final if p.strip()])
-
-            # ФИКС: Убираем дубли из финальной строки.
-            # Раньше ты вставлял и res_summary (где уже был rec_text), и r_h, и rec_text отдельно.
-            final_report = (
-                f"{h1}:\n{status_text}\n\n"
-                f"{h2}:\n{' '.join(f_res)}\n\n"
-                f"{h3}:\n{res_summary}\n"
-                f"{icf_block}"
-                # УДАЛИЛ ПОВТОРНУЮ СТРОКУ f"\n\n{rec_text}" - ОНА УЖЕ В res_summary
-            )
-            return final_report
-
         except Exception as e:
             return f"❌ Error in run: {e}"
 
