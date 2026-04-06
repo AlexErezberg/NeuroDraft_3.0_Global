@@ -1049,6 +1049,21 @@ if st.button(btn_label):
         t_in=",".join(selected_tags),
         lang=lang
     )
+
+    if st.button(btn_label):
+    full_code = f"{p_type}{p_gen}/{''.join(map(str, scores))}"
+    engine = NeuroDraftAssistant(matrix) # или NeuroExpertMaster
+    
+    # ПЕРЕДАЕМ ПСИХОМЕТРИЮ В ДВИЖОК
+    report = engine.run(
+        code_str=full_code, 
+        pr_in=",".join(presets), 
+        t_in=",".join(selected_tags),
+        lang=lang,
+        moca=moca, 
+        mmse=mmse, 
+        gds=gds
+    )
     
     # ВЫЗЫВАЕМ ДИАЛОГ ТОЛЬКО ОДИН РАЗ
     show_result_dialog(
