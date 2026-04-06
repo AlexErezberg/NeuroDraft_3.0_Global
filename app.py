@@ -902,8 +902,19 @@ with c_tit:
 
 with c_mri:
     st.caption("MRI / CT LOCALIZATION")
-    mri_options = ["Frontal", "Temporal", "Parietal", "Occipital", "Hippocampal", "Basal Ganglia", "Cerebellum", "Brainstem", "Diffuse"]
-    # Мультиселект без лишнего заголовка, прижатый к шкалам
+    # Список строго по ключам из твоей карты корреляций (correlations)
+    mri_options = [
+        "Frontal", 
+        "Temporal", 
+        "Parietal", 
+        "Occipital", 
+        "Limbic", 
+        "Callosal", 
+        "Cerebellar", 
+        "Subcortical", 
+        "Hippocampal"
+    ]
+    # Мультиселект для передачи в движок
     mri_selected = st.multiselect("MRI", mri_options, key="mri_ms", label_visibility="collapsed")
 
 with c_m1:
