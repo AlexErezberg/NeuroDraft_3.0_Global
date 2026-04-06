@@ -678,32 +678,32 @@ class NeuroDraftAssistant:
                     unique_res.append(x)
                     seen_texts.add(base_text)
 
-            # --- ФИНАЛЬНАЯ СБОРКА UI И ВЫВОД ---
+            # --- 6. ФИНАЛЬНАЯ СБОРКА (БЕЗОПАСНЫЙ ОРИГИНАЛ) ---
             ui = self.lib.get("ui_labels", {})
-            r_label_dict = recom_db.get("label", {})
-            r_h = r_label_dict.get(lang, ui.get('recommendations_header', {}).get(lang, "RECOMMENDATIONS"))
-
             h1 = ui.get('status_header', {}).get(lang, 'MSE')
             h2 = ui.get('results_header', {}).get(lang, 'PROFILE')
             h3 = ui.get('conclusion_header', {}).get(lang, 'SUMMARY')
             
-            # --- ВОТ ЭТА СТРОКА СПАСЕТ ТВОЮ МОКУ ---
-            # Собираем скрининг в одну строку, если он есть в списке final
-            scr_header = final[0] + "\n\n" if (moca or mmse or gds) and final else ""
-            # А из остального текста (res_summary) его уберем, чтобы не дублировать
-            res_summary = " ".join([p.strip() for p in final[1:] if p.strip()]) if scr_header else " ".join([p.strip() for p in final if p.strip()])
-            
+            # Собираем скрининг (MoCA/MMSE), если он есть в начале списка final
+            scr_line = ""
+            if (moca or mmse or gds) and len(final) > 0:
+                scr_line = final[0] + "\n\n" # Берем только первую строку (скрининг)
+                res_summary = " ".join([p.strip() for p in final[1:] if p.strip()])
+            else:
+                res_summary = " ".join([p.strip() for p in final if p.strip()])
+
+            # Рекомендации (Твой оригинальный блок)
+            r_h = self.lib.get("recommendations", {}).get("label", {}).get(lang, "RECOMMENDATIONS")
             rec_text = ""
-            if unique_res:
-                rec_text = f"{r_h.upper()}:\n" + "\n\n".join(unique_res)
+            if 'unique_res' in locals() and unique_res:
+                rec_text = f"\n\n{r_h.upper()}:\n" + "\n\n".join(unique_res)
 
-            res_summary = " ".join([p.strip() for p in final if p.strip()])
-
+            # СОБИРАЕМ ОТЧЕТ С ТВОИМИ АБЗАЦАМИ (\n\n)
             final_report = (
-                f"{scr_header}" # <-- ВСТАВИЛИ СКРИНИНГ В САМЫЙ ВЕРХ, НАД ВСЕМИ ШАПКАМИ
+                f"{scr_line}"
                 f"{h1}:\n{status_text}\n\n"
                 f"{h2}:\n{' '.join(f_res)}\n\n"
-                f"{h3}:\n{res_summary}"
+                f"{h3}:\n{res_summary}\n\n" # Вернул два переноса
                 f"{icf_block}"
                 f"{rec_text}"
             )
