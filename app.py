@@ -1037,24 +1037,25 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
 btn_label = "🚀 GENERATE REPORT" if lang != 'ru' else "🚀 СГЕНЕРИРОВАТЬ ПРОТОКОЛ"
 
 if st.button(btn_label):
-    # Внутренний код СТРОГО с отступом в 4 пробела
+    # Достаем ПСИХОМЕТРИЮ напрямую из ключей session_state
+    moca_val = st.session_state.get("moca_in", 30)
+    mmse_val = st.session_state.get("mmse_in", 30)
+    gds_val = st.session_state.get("gds_in", 0)
+
     full_code = f"{p_type}{p_gen}/{''.join(map(str, scores))}"
-    
-    # Инициализируем движок (проверь имя класса: Assistant или Master)
     engine = NeuroDraftAssistant(matrix)
     
-    # Запуск движка с пробросом ПСИХОМЕТРИИ
+    # ПЕРЕДАЕМ ПРОВЕРЕННЫЕ ЗНАЧЕНИЯ
     report = engine.run(
         code_str=full_code, 
         pr_in=",".join(presets), 
         t_in=",".join(selected_tags),
         lang=lang,
-        moca=moca, 
-        mmse=mmse, 
-        gds=gds
+        moca=moca_val, 
+        mmse=mmse_val, 
+        gds=gds_val
     )
     
-    # Вызов диалога (ОДИН РАЗ)
     show_result_dialog(
         report_text=report, 
         fio_name=fio, 
