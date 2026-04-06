@@ -980,23 +980,31 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
     st.text_area("REPORT:", report_text, height=300)
     if st.button("❌ EXIT", use_container_width=True): st.rerun()
         
-# --- 5. САМА КНОПКА ЗАПУСКА (В САМОМ НИЗУ) ---
-# Название кнопки теперь тоже зависит от выбранного языка
+# --- 5. САМА КНОПКА ЗАПУСКА ---
 btn_label = "🚀 GENERATE REPORT" if lang != 'ru' else "🚀 СГЕНЕРИРОВАТЬ ПРОТОКОЛ"
 
 if st.button(btn_label):
-    # Собираем код: Тип + Пол + 10 цифр из ползунков
     full_code = f"{p_type}{p_gen}/{''.join(map(str, scores))}"
+    engine = NeuroExpertMaster(matrix)
     
-    # Инициализируем ассистента
-    engine = NeuroDraftAssistant(matrix)
-    
-    # --- ВАЖНО: Передаем lang=lang, чтобы отчет не был всегда русским ---
+    # Запуск движка
     report = engine.run(
         code_str=full_code, 
         pr_in=",".join(presets), 
         t_in=",".join(selected_tags),
-        lang=lang  # <--- Движок увидит, какой язык выбрал юзер
+        lang=lang
+    )
+    
+    # Вызов диалога (прокидываем всё)
+    show_result_dialog(
+        report_text=report, 
+        fio_name=fio, 
+        p_type=p_type, 
+        presets=presets, 
+        selected_tags=selected_tags, 
+        scores=scores, 
+        f_names=f_names,
+        lang=lang
     )
     
     # Вызываем диалог с результатом
