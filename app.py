@@ -989,6 +989,8 @@ btn_label = "🚀 GENERATE REPORT" if lang != 'ru' else "🚀 СГЕНЕРИРО
 
 if st.button(btn_label):
     full_code = f"{p_type}{p_gen}/{''.join(map(str, scores))}"
+    
+    # Инициализируем ассистента
     engine = NeuroDraftAssistant(matrix)
     
     # Запуск движка
@@ -999,7 +1001,7 @@ if st.button(btn_label):
         lang=lang
     )
     
-    # Вызов диалога (прокидываем всё)
+    # ВЫЗЫВАЕМ ДИАЛОГ ТОЛЬКО ОДИН РАЗ
     show_result_dialog(
         report_text=report, 
         fio_name=fio, 
@@ -1009,15 +1011,4 @@ if st.button(btn_label):
         scores=scores, 
         f_names=f_names,
         lang=lang
-    )
-    
-    # Вызываем диалог с результатом
-    show_result_dialog(
-        report_text=report, 
-        fio_name=fio, 
-        p_type=p_type, 
-        presets=presets, 
-        selected_tags=selected_tags, 
-        scores=scores, 
-        f_names=f_names
     )
