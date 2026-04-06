@@ -852,21 +852,6 @@ with st.sidebar:
     conclusion_h = ui.get("conclusion_header", {}).get(lang, "CONCLUSION")
     recs_h = ui.get("recs_header", {}).get(lang, "RECOMMENDATIONS")
     # ----------------------------
-
-    # --- БЛОК ПСИХОМЕТРИИ ---
-    st.markdown("---")
-    ps_h = {"ru": "📝 ПСИХОМЕТРИЯ", "en": "📝 PSYCHOMETRICS", "es": "📝 PSICOMETRÍA", "pt": "📝 PSICOMETRIA"}.get(lang, "PSYCHOMETRICS")
-    st.subheader(ps_h)
-    
-    c_m1, c_m2, c_m3 = st.columns(3)
-    with c_m1:
-        # Важно: key="moca_in" должен совпадать с тем, что в reset_app и в кнопке запуска
-        moca = st.number_input("MoCA", 0, 30, 30, key="moca_in")
-    with c_m2:
-        mmse = st.number_input("MMSE", 0, 30, 30, key="mmse_in")
-    with c_m3:
-        gds = st.number_input("GDS", 0, 15, 0, key="gds_in")
-    # ----------------------------
     
     st.header("📋 Пациент")
     
@@ -899,29 +884,41 @@ with st.sidebar:
             <p style="color: #555; font-size: 0.6em;">Commercial v85.6-STABLE</p>
         </div>
     """, unsafe_allow_html=True)
+# --- 3. ЦЕНТРАЛЬНОЕ ПОЛЕ (ДОМЕНЫ + ПСИХОМЕТРИЯ) ---
+# Создаем сетку: Заголовок (55%) и три микро-поля (по 15%)
+c_tit, c_m1, c_m2, c_m3 = st.columns([0.55, 0.15, 0.15, 0.15])
 
-# --- 3. ЦЕНТРАЛЬНОЕ ПОЛЕ (НЕЙРОКОГНИТИВНЫЕ ДОМЕНЫ) ---
-# Заголовок секции (берем из твоих ui_labels)
-domains_title = ui.get('status_header', {}).get(lang, 'NEUROCOGNITIVE DOMAINS')
-st.subheader(f"🧠 {domains_title}")
+with c_tit:
+    domains_title = ui.get('status_header', {}).get(lang, 'NEUROCOGNITIVE DOMAINS')
+    st.subheader(f"🧠 {domains_title}")
 
-# Точные ключи из твоего блока "functions"
+# Компактный ввод шкал (подписи сверху через caption для экономии места)
+with c_m1:
+    st.caption("MoCA")
+    moca = st.number_input("MoCA", 0, 30, 30, key="moca_in", label_visibility="collapsed")
+with c_m2:
+    st.caption("MMSE")
+    mmse = st.number_input("MMSE", 0, 30, 30, key="mmse_in", label_visibility="collapsed")
+with c_m3:
+    st.caption("GDS")
+    gds = st.number_input("GDS", 0, 15, 0, key="gds_in", label_visibility="collapsed")
+
+st.markdown("---")
+
+# Логика доменов (твой оригинал)
 domain_keys = [
     "attention", "visual_gnosis", "spatial", "dynamic_praxis", 
     "afferent_praxis", "cube", "calculation", "speech", "memory", "thinking"
 ]
 
 f_names = []
-# Заходим внутрь "functions"
 funcs = matrix.get("functions", {})
 
 for k in domain_keys:
-    # Тянем ПОЛНОЕ название: matrix -> functions -> ключ -> label -> lang
     name = funcs.get(k, {}).get("label", {}).get(lang, k.upper())
     f_names.append(name)
 
 scores = []
-# key=f"s_{i}_{lang}" — принудительно перерисовывает ползунок при смене языка
 for i, name in enumerate(f_names):
     scores.append(st.slider(f"{i+1}. {name}", 0, 5, 0, key=f"s_{i}_{lang}"))
 
@@ -1051,15 +1048,15 @@ if st.button(btn_label):
     # Инициализируем движок
     engine = NeuroDraftAssistant(matrix)
     
-    # Запускаем генерацию (ПЕРЕДАЕМ ПСИХОМЕТРИЮ)
+    # Запускаем генерацию (ПЕРЕДАЕМ ПСИХОМЕТРИЮ НАПРЯМУЮ)
     report = engine.run(
         code_str=full_code, 
         pr_in=",".join(presets), 
         t_in=",".join(selected_tags),
         lang=lang,
-        moca=m_val, 
-        mmse=mm_val, 
-        gds=g_val
+        moca=moca, 
+        mmse=mmse, 
+        gds=gds
     )
     
     # Показываем результат
