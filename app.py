@@ -920,11 +920,19 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
     elif p_type == "8": core_label = "Sch"
     elif p_type in ["0", "0т", "0*", "0+", "0-", "00"]: core_label = "N"
 
-    # --- 2. ЛОГИКА БУСТЕРОВ ДЛЯ БЛОКОВ ---
+    # --- 2. ЛОГИКА БУСТЕРОВ ДЛЯ БЛОКОВ (NEURO-DRAFT 3.0) ---
     is_organ = p_type in ["1", "2", "3", "4", "5"]
-    b1 = 3 if any(p in ["н", "Апат", "асте"] for p in presets) and is_organ else 0
-    b2 = 3 if any(p in ["Асенс", "Ааф", "Аак", "Асем", "Апркин", "Апркон", "АгнП", "АгнЛ", "неглект"] for p in presets) and is_organ else 0
-    b3 = 3 if any(p in ["праврег", "леврег", "Аэф", "Апрдин"] for p in presets) and is_organ else 0
+    
+    # Блок I (Энергия/Тонус): нейродинамика, апатия, MSA
+    b1 = 3 if any(p in ["ndyn", "a-pathy", "msa"] for p in presets) and is_organ else 0
+    
+    # Блок II (Прием/Обработка): все виды афазий, гнозис, неглект, кинест. и констр. праксис
+    b2_tags = ["a-sens", "a-aff", "a-amn", "a-sem", "v-gnosis", "v-neglect", "apr-kin", "apr-con"]
+    b2 = 3 if any(p in b2_tags for p in presets) and is_organ else 0
+    
+    # Блок III (Программирование/Контроль): регуляция (L/R), динам. праксис, эфферентная афазия, фронтальное зрение
+    b3_tags = ["r-reg", "l-reg", "apr-dyn", "a-eff", "a-dyn", "v-frontal"]
+    b3 = 3 if any(p in b3_tags for p in presets) and is_organ else 0
 
     # --- 3. СБОРКА ГРАФИКА ---
     fig = go.Figure()
