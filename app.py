@@ -884,25 +884,27 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 # --- 3. ЦЕНТРАЛЬНОЕ ПОЛЕ (НЕЙРОКОГНИТИВНЫЕ ДОМЕНЫ) ---
-# Заголовок секции подтягиваем из твоих ui_labels
+# Заголовок секции (берем из твоих ui_labels)
 domains_title = ui.get('status_header', {}).get(lang, 'NEUROCOGNITIVE DOMAINS')
 st.subheader(f"🧠 {domains_title}")
 
-# Ключи из твоего JSON (проверь, чтобы в массиве они были именно такие)
+# Точные ключи из твоего блока "functions"
 domain_keys = [
     "attention", "visual_gnosis", "spatial", "dynamic_praxis", 
     "afferent_praxis", "cube", "calculation", "speech", "memory", "thinking"
 ]
 
 f_names = []
+# Заходим внутрь "functions"
+funcs = matrix.get("functions", {})
+
 for k in domain_keys:
-    # Тянем ПОЛНОЕ название: matrix -> ключ -> label -> lang
-    # Если вдруг ключа нет - выведет сам ключ капсом (для отладки)
-    val = matrix.get(k, {}).get("label", {}).get(lang, k.upper())
-    f_names.append(val)
+    # Тянем ПОЛНОЕ название: matrix -> functions -> ключ -> label -> lang
+    name = funcs.get(k, {}).get("label", {}).get(lang, k.upper())
+    f_names.append(name)
 
 scores = []
-# ВАЖНО: Добавляем _{lang} в key, чтобы Стримлит ПЕРЕРИСОВАЛ ползунок с новым длинным именем
+# key=f"s_{i}_{lang}" — принудительно перерисовывает ползунок при смене языка
 for i, name in enumerate(f_names):
     scores.append(st.slider(f"{i+1}. {name}", 0, 5, 0, key=f"s_{i}_{lang}"))
 
