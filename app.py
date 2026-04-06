@@ -908,11 +908,8 @@ scores = []
 for i, name in enumerate(f_names):
     scores.append(st.slider(f"{i+1}. {name}", 0, 5, 0, key=f"s_{i}_{lang}"))
 
-# --- ФУНКЦИЯ ДИАЛОГОВОГО ОКНА (МУЛЬТИЯЗЫЧНАЯ) ---
-# Заголовок теперь динамический
-dialog_title = ui.get("conclusion_header", {}).get(lang, "FINAL PROTOCOL")
-
-@st.dialog(dialog_title, width="large")
+# --- ФУНКЦИЯ ДИАЛОГОВОГО ОКНА (МУЛЬТИЯЗЫЧНАЯ И НАУЧНАЯ) ---
+@st.dialog("📄 FINAL PROTOCOL", width="large")
 def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, scores, f_names, lang):
     # --- 1. ЛОГИКА ЯДРА ---
     core_label = "Org"
@@ -945,65 +942,61 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
         annotations=[dict(x=0.5, y=0.5, text=core_label, showarrow=False, font=dict(size=32, color="#FF4B4B", family="Arial Black"))]
     )
 
-    # --- 4. РАЗМЕТКА ---
-    col_blocks, col_chart, col_nets = st.columns([0.2, 0.6, 0.2])
+    # --- 4. ТЕРМИНОЛОГИЯ (БЛОКИ И СИНДРОМЫ) ---
+    ui_bl = {"ru": "🧠 БЛОКИ:", "en": "🧠 UNITS:", "es": "🧠 UNIDADES:", "pt": "🧠 UNIDADES:"}.get(lang, "UNITS:")
+    ui_nt = {"ru": "🔎 СИНДРОМЫ:", "en": "🔎 SYNDROMES:", "es": "🔎 SÍNDROMES:", "pt": "🔎 SÍNDROMES:"}.get(lang, "SYNDROMES:")
+    
+    blk_list = {
+        "ru": ["I: Энергия", "II: Прием", "III: Контроль"],
+        "en": ["Unit I: Arousal", "Unit II: Sensory", "Unit III: Exec."],
+        "es": ["Unidad I: Alerta", "Unidad II: Proces.", "Unidad III: Exec."],
+        "pt": ["Unidade I: Alerta", "Unidade II: Proces.", "Unidade III: Exec."]
+    }.get(lang, ["Unit I", "Unit II", "Unit III"])
 
-    # Словарик для блоков и сетей
-    ui_bl = {"ru": "🧠 Блоки:", "en": "🧠 Blocks:", "es": "🧠 Bloques:", "pt": "🧠 Blocos:"}.get(lang)
-    ui_nt = {"ru": "🔎 Сети:", "en": "🔎 Networks:", "es": "🔎 Redes:", "pt": "🔎 Redes:"}.get(lang)
-    blk_names = {
-        "ru": ["БЛОК I", "БЛОК II", "БЛОК III"],
-        "en": ["BLOCK I", "BLOCK II", "BLOCK III"],
-        "es": ["BLOQUE I", "BLOQUE II", "BLOQUE III"],
-        "pt": ["BLOCO I", "BLOCO II", "BLOCO III"]
-    }.get(lang, ["BLOCK I", "BLOCK II", "BLOCK III"])
+    col_blocks, col_chart, col_nets = st.columns([0.25, 0.5, 0.25])
 
     with col_blocks:
         st.write(f"**{ui_bl}**")
-        blks = [
-            (blk_names[0], scores[0] + scores[6] + b1 >= 3),
-            (blk_names[1], scores[1] + scores[2] + scores[5] + b2 >= 3),
-            (blk_names[2], scores[3] + scores[9] + b3 >= 3)
+        blks_data = [
+            (blk_list[0], scores[0] + scores[6] + b1 >= 3),
+            (blk_list[1], scores[1] + scores[2] + scores[5] + b2 >= 3),
+            (blk_list[2], scores[3] + scores[9] + b3 >= 3)
         ]
-        for name, active in blks:
+        for name, active in blks_data:
             bg = "#FF4B4B" if active else "#1c1f26"
             tc = "white" if active else "#555"
-            st.markdown(f'<div style="background:{bg}; color:{tc}; padding:8px; border-radius:5px; margin-bottom:5px; text-align:center; font-weight:bold; font-size:0.75em; border:1px solid #333;">{name}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="background:{bg}; color:{tc}; padding:8px; border-radius:5px; margin-bottom:5px; text-align:center; font-weight:bold; font-size:0.7em; border:1px solid #333;">{name}</div>', unsafe_allow_html=True)
 
     with col_chart:
         st.plotly_chart(fig, use_container_width=True)
 
     with col_nets:
         st.write(f"**{ui_nt}**")
-        networks = ["ДЭП", "МСА", "МКАС", "ТАЛАМ", "РЕТИК", "СТРИАР", "МПС"]
-        for net in networks:
-            is_active = any(p.upper() == net.upper() for p in presets)
+        # Маппинг твоих кодов в международку
+        net_map = {
+            "ДЭП": "Vascular", "МСА": "MSA", "МКАС": "CBS", 
+            "ТАЛАМ": "Thalamic", "РЕТИК": "Reticular", "СТРИАР": "Striatal", "МПС": "Psychosom"
+        }
+        for code, label in net_map.items():
+            is_active = any(p.upper() == code.upper() for p in presets)
             bg = "#FF4B4B" if is_active else "#1c1f26"
             tc = "white" if is_active else "#444"
-            st.markdown(f'<div style="background:{bg}; color:{tc}; padding:4px; border-radius:5px; margin-bottom:4px; text-align:center; font-size:0.7em; font-weight:bold; border:1px solid #333;">{net}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="background:{bg}; color:{tc}; padding:4px; border-radius:5px; margin-bottom:4px; text-align:center; font-size:0.65em; font-weight:bold; border:1px solid #333;">{label}</div>', unsafe_allow_html=True)
 
     st.markdown("---")
-    
-    # Текст заключения
-    area_label = ui.get("conclusion_header", {}).get(lang, "Report")
-    st.text_area(area_label, report_text, height=300)
+    st.text_area("PROTOCOL:", report_text, height=300)
     
     # КНОПКИ
-    btn_word = {"ru": "📥 ВОРД", "en": "📥 WORD", "es": "📥 WORD", "pt": "📥 WORD"}.get(lang)
-    btn_copy = {"ru": "📋 КОПИРОВАТЬ", "en": "📋 COPY", "es": "📋 COPIAR", "pt": "📋 COPIAR"}.get(lang)
-    btn_exit = {"ru": "❌ ВЫХОД", "en": "❌ EXIT", "es": "❌ SALIR", "pt": "❌ SAIR"}.get(lang)
-
     c1, c2, c3 = st.columns(3)
     with c1:
         doc = Document()
         doc.add_paragraph(f"NEURO-DRAFT PROTOCOL: {fio_name}\n\n{report_text}")
         bio = io.BytesIO(); doc.save(bio)
-        st.download_button(btn_word, bio.getvalue(), f"{fio_name}.docx", use_container_width=True)
+        st.download_button("📥 WORD", bio.getvalue(), f"{fio_name}.docx", use_container_width=True)
     with c2:
-        if st.button(btn_copy, use_container_width=True):
-            st.code(report_text, language=None)
+        if st.button("📋 COPY", use_container_width=True): st.code(report_text, language=None)
     with c3:
-        if st.button(btn_exit, use_container_width=True): st.rerun()
+        if st.button("❌ EXIT", use_container_width=True): st.rerun()
         
 # --- 5. САМА КНОПКА ЗАПУСКА (В САМОМ НИЗУ) ---
 # Название кнопки теперь тоже зависит от выбранного языка
