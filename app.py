@@ -975,9 +975,9 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
         
         # НОВЫЙ МАППИНГ СЕТЕВЫХ СИНДРОМОВ
         net_map = {
-            "vci-svd": "Vascular/SVD", 
+            "vci-svd": "Vascular", 
             "msa": "MSA", 
-            "ccas": "CCAS/CBS", 
+            "ccas": "CCAS", 
             "thalam": "Thalamic", 
             "retic": "Reticular", 
             "striar": "Striatal", 
