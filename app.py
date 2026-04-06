@@ -891,15 +891,21 @@ with st.sidebar:
             <p style="color: #555; font-size: 0.6em;">Commercial v85.6-STABLE</p>
         </div>
     """, unsafe_allow_html=True)
-# --- 3. ЦЕНТРАЛЬНОЕ ПОЛЕ (ДОМЕНЫ + ПСИХОМЕТРИЯ) ---
-# Создаем сетку: Заголовок (55%) и три микро-поля (по 15%)
-c_tit, c_m1, c_m2, c_m3 = st.columns([0.55, 0.15, 0.15, 0.15])
+    
+# --- 3. ЦЕНТРАЛЬНОЕ ПОЛЕ (ДОМЕНЫ + ОБЪЕКТИВКА: МРТ & ШКАЛЫ) ---
+# Сетка: Заголовок (35%), МРТ (35%), и три шкалы по 10%
+c_tit, c_mri, c_m1, c_m2, c_m3 = st.columns([0.35, 0.35, 0.1, 0.1, 0.1])
 
 with c_tit:
     domains_title = ui.get('status_header', {}).get(lang, 'NEUROCOGNITIVE DOMAINS')
     st.subheader(f"🧠 {domains_title}")
 
-# Компактный ввод шкал (подписи сверху через caption для экономии места)
+with c_mri:
+    st.caption("MRI / CT LOCALIZATION")
+    mri_options = ["Frontal", "Temporal", "Parietal", "Occipital", "Hippocampal", "Basal Ganglia", "Cerebellum", "Brainstem", "Diffuse"]
+    # Мультиселект без лишнего заголовка, прижатый к шкалам
+    mri_selected = st.multiselect("MRI", mri_options, key="mri_ms", label_visibility="collapsed")
+
 with c_m1:
     st.caption("MoCA")
     moca = st.number_input("MoCA", 0, 30, 30, key="moca_in", label_visibility="collapsed")
@@ -1044,18 +1050,16 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
 btn_label = "🚀 GENERATE REPORT" if lang != 'ru' else "🚀 СГЕНЕРИРОВАТЬ ПРОТОКОЛ"
 
 if st.button(btn_label):
-    # Достаем значения психометрии из сессии ПРЯМО ПЕРЕД ЗАПУСКОМ
-    m_val = st.session_state.get("moca_in", 30)
-    mm_val = st.session_state.get("mmse_in", 30)
-    g_val = st.session_state.get("gds_in", 0)
-
-    # Собираем код
+    # 1. Собираем МРТ-локализации в одну строку
+    mri_val = ", ".join(mri_selected) if mri_selected else ""
+    
+    # 2. Собираем основной код
     full_code = f"{p_type}{p_gen}/{''.join(map(str, scores))}"
     
-    # Инициализируем движок
+    # 3. Инициализируем движок
     engine = NeuroDraftAssistant(matrix)
     
-    # Запускаем генерацию (ПЕРЕДАЕМ ПСИХОМЕТРИЮ НАПРЯМУЮ)
+    # 4. Запускаем генерацию со ВСЕМИ данными (Шкалы + МРТ)
     report = engine.run(
         code_str=full_code, 
         pr_in=",".join(presets), 
@@ -1063,10 +1067,11 @@ if st.button(btn_label):
         lang=lang,
         moca=moca, 
         mmse=mmse, 
-        gds=gds
+        gds=gds,
+        mri=mri_val  # <--- МРТ ТЕПЕРЬ ТУТ
     )
     
-    # Показываем результат
+    # 5. Показываем результат
     show_result_dialog(
         report_text=report, 
         fio_name=fio, 
