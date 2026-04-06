@@ -985,7 +985,7 @@ btn_label = "🚀 GENERATE REPORT" if lang != 'ru' else "🚀 СГЕНЕРИРО
 
 if st.button(btn_label):
     full_code = f"{p_type}{p_gen}/{''.join(map(str, scores))}"
-    engine = NeuroExpertMaster(matrix)
+    engine = NeuroDraftAssistant(matrix)
     
     # Запуск движка
     report = engine.run(
