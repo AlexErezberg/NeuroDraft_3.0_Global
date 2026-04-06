@@ -908,76 +908,81 @@ scores = []
 for i, name in enumerate(f_names):
     scores.append(st.slider(f"{i+1}. {name}", 0, 5, 0, key=f"s_{i}_{lang}"))
 
-# --- ФУНКЦИЯ ДИАЛОГОВОГО ОКНА (ТВОЙ ОРИГИНАЛ) ---
-@st.dialog("📄 FINAL PROTOCOL", width="large")
+# --- ФУНКЦИЯ ДИАЛОГОВОГО ОКНА ---
+@st.dialog("📄 ИТОГОВЫЙ ПРОТОКОЛ", width="large")
 def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, scores, f_names, lang):
-    # 1. ЛОГИКА ЯДРА (ТВОЙ ОРИГИНАЛ)
+    # --- 1. ЛОГИКА ЯДРА (N, D, Org, Sch) ---
     core_label = "Org"
     d_presets = ["Дког", "Дгор", "Дгорсом", "Дсом", "Дтр"]
     has_d_preset = any(p in presets for p in d_presets)
-    if p_type in ["9", "Дгэ"] or has_d_preset: core_label = "D"
+    if p_type == "9" or p_type == "Дгэ" or has_d_preset: 
+        core_label = "D"
     elif p_type == "8": core_label = "Sch"
     elif p_type in ["0", "0т", "0*", "0+", "0-", "00"]: core_label = "N"
 
-    # 2. БУСТЕРЫ (ТВОЙ ОРИГИНАЛ)
+    # --- 2. ЛОГИКА БУСТЕРОВ ДЛЯ БЛОКОВ ---
     is_organ = p_type in ["1", "2", "3", "4", "5"]
     b1 = 3 if any(p in ["н", "Апат", "асте"] for p in presets) and is_organ else 0
     b2 = 3 if any(p in ["Асенс", "Ааф", "Аак", "Асем", "Апркин", "Апркон", "АгнП", "АгнЛ", "неглект"] for p in presets) and is_organ else 0
     b3 = 3 if any(p in ["праврег", "леврег", "Аэф", "Апрдин"] for p in presets) and is_organ else 0
 
-    # 3. ГРАФИК (ИСПРАВЛЕНО ТЕХНИЧЕСКИ: r = scores + [scores[0]])
+    # --- 3. СБОРКА ГРАФИКА ---
     fig = go.Figure()
     fig.add_trace(go.Scatterpolar(
-        r = scores + [scores[0]],       # Замыкаем круг ПЕРВЫМ баллом
-        theta = f_names + [f_names[0]], # Замыкаем круг ПЕРВЫМ названием
+        r = scores + [scores[0]],
+        theta = f_names + [f_names[0]],
         fill='toself',
         fillcolor='rgba(255, 75, 75, 0.3)',
         line=dict(color='#FF4B4B', width=2)
     ))
     fig.update_layout(
-        polar=dict(radialaxis=dict(visible=True, range=[0, 5], tickfont=dict(color="#808495")), 
-                   angularaxis=dict(tickfont=dict(size=10, color="white"))),
+        polar=dict(radialaxis=dict(visible=True, range=[0, 5]), angularaxis=dict(tickfont=dict(size=10, color="white"))),
         showlegend=False, height=400, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
         annotations=[dict(x=0.5, y=0.5, text=core_label, showarrow=False, font=dict(size=32, color="#FF4B4B", family="Arial Black"))]
     )
 
-    # 4. РАЗМЕТКА (МУЛЬТИЛЕНГ БЕЗ ПОТЕРИ ЛОГИКИ)
-    ui_bl = {"ru": "🧠 БЛОКИ:", "en": "🧠 UNITS:", "es": "🧠 UNIDADES:", "pt": "🧠 UNIDADES:"}.get(lang, "UNITS:")
-    ui_nt = {"ru": "🔎 СЕТИ:", "en": "🔎 SYNDROMES:", "es": "🔎 SÍNDROMES:", "pt": "🔎 SÍNDROMES:"}.get(lang, "SYNDROMES:")
-    blk_names = {
-        "ru": ["БЛОК I", "БЛОК II", "БЛОК III"],
-        "en": ["UNIT I", "UNIT II", "UNIT III"]
-    }.get(lang, ["UNIT I", "UNIT II", "UNIT III"])
+    # --- 4. РАЗМЕТКА: БЛОКИ (0.2) | ГРАФИК (0.6) | СЕТИ (0.2) ---
+    col_blocks, col_chart, col_nets = st.columns([0.2, 0.6, 0.2])
 
-    c_bl, c_ch, c_nt = st.columns([0.2, 0.6, 0.2])
-
-    with c_bl:
-        st.write(f"**{ui_bl}**")
-        # ТВОИ ОРИГИНАЛЬНЫЕ ФОРМУЛЫ
+    with col_blocks:
+        st.write("🧠 **Блоки:**")
         blks = [
-            (blk_names[0], scores[0] + scores[6] + b1 >= 3),
-            (blk_names[1], scores[1] + scores[2] + scores[5] + b2 >= 3),
-            (blk_names[2], scores[3] + scores[9] + b3 >= 3)
+            ("БЛОК I", scores[0] + scores[6] + b1 >= 3),
+            ("БЛОК II", scores[1] + scores[2] + scores[5] + b2 >= 3),
+            ("БЛОК III", scores[3] + scores[9] + b3 >= 3)
         ]
         for name, active in blks:
             bg = "#FF4B4B" if active else "#1c1f26"
-            st.markdown(f'<div style="background:{bg}; color:white; padding:8px; border-radius:5px; margin-bottom:5px; text-align:center; font-weight:bold; font-size:0.75em; border:1px solid #333;">{name}</div>', unsafe_allow_html=True)
+            tc = "white" if active else "#555"
+            st.markdown(f'<div style="background:{bg}; color:{tc}; padding:8px; border-radius:5px; margin-bottom:5px; text-align:center; font-weight:bold; font-size:0.75em; border:1px solid #333;">{name}</div>', unsafe_allow_html=True)
 
-    with c_ch:
+    with col_chart:
         st.plotly_chart(fig, use_container_width=True)
 
-    with c_nt:
-        st.write(f"**{ui_nt}**")
+    with col_nets:
+        st.write("🔎 **Сети:**")
         networks = ["ДЭП", "МСА", "МКАС", "ТАЛАМ", "РЕТИК", "СТРИАР", "МПС"]
         for net in networks:
             is_active = any(p.upper() == net.upper() for p in presets)
             bg = "#FF4B4B" if is_active else "#1c1f26"
-            label = net if lang == 'ru' else net # Здесь можно добавить перевод
-            st.markdown(f'<div style="background:{bg}; color:white; padding:4px; border-radius:5px; margin-bottom:4px; text-align:center; font-size:0.7em; font-weight:bold; border:1px solid #333;">{label}</div>', unsafe_allow_html=True)
+            tc = "white" if is_active else "#444"
+            st.markdown(f'<div style="background:{bg}; color:{tc}; padding:4px; border-radius:5px; margin-bottom:4px; text-align:center; font-size:0.7em; font-weight:bold; border:1px solid #333;">{net}</div>', unsafe_allow_html=True)
 
     st.markdown("---")
-    st.text_area("REPORT:", report_text, height=300)
-    if st.button("❌ EXIT", use_container_width=True): st.rerun()
+    area_label = {"ru": "Текст заключения:", "en": "Clinical Report:", "es": "Informe Clínico:", "pt": "Relatório Clínico:"}.get(lang, "Report:")
+    st.text_area(area_label, report_text, height=300)
+    
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        doc = Document()
+        doc.add_paragraph(f"ПРОТОКОЛ: {fio_name}\n\n{report_text}")
+        bio = io.BytesIO(); doc.save(bio)
+        st.download_button("📥 WORD", bio.getvalue(), f"{fio_name}.docx", use_container_width=True)
+    with c2:
+        if st.button("📋 COPY", use_container_width=True):
+            st.code(report_text, language=None)
+    with c3:
+        if st.button("❌ EXIT", use_container_width=True): st.rerun()
         
 # --- 5. САМА КНОПКА ЗАПУСКА ---
 btn_label = "🚀 GENERATE REPORT" if lang != 'ru' else "🚀 СГЕНЕРИРОВАТЬ ПРОТОКОЛ"
