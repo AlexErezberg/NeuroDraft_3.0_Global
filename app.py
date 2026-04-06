@@ -941,15 +941,24 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
         annotations=[dict(x=0.5, y=0.5, text=core_label, showarrow=False, font=dict(size=32, color="#FF4B4B", family="Arial Black"))]
     )
 
-    # --- 4. РАЗМЕТКА: БЛОКИ (0.2) | ГРАФИК (0.6) | СЕТИ (0.2) ---
+# --- 4. РАЗМЕТКА: БЛОКИ (0.2) | ГРАФИК (0.6) | СЕТИ (0.2) ---
     col_blocks, col_chart, col_nets = st.columns([0.2, 0.6, 0.2])
 
     with col_blocks:
-        st.write("🧠 **Блоки:**")
+        # Перевод заголовка
+        b_head = "🧠 Блоки:" if lang == 'ru' else "🧠 Units:"
+        st.write(f"**{b_head}**")
+        
+        # Перевод названий блоков
+        if lang == 'ru':
+            bn = ["БЛОК I", "БЛОК II", "БЛОК III"]
+        else:
+            bn = ["Unit I (Arousal)", "Unit II (Processing)", "Unit III (Control)"]
+
         blks = [
-            ("БЛОК I", scores[0] + scores[6] + b1 >= 3),
-            ("БЛОК II", scores[1] + scores[2] + scores[5] + b2 >= 3),
-            ("БЛОК III", scores[3] + scores[9] + b3 >= 3)
+            (bn[0], scores[0] + scores[6] + b1 >= 3),
+            (bn[1], scores[1] + scores[2] + scores[5] + b2 >= 3),
+            (bn[2], scores[3] + scores[9] + b3 >= 3)
         ]
         for name, active in blks:
             bg = "#FF4B4B" if active else "#1c1f26"
@@ -960,13 +969,23 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
         st.plotly_chart(fig, use_container_width=True)
 
     with col_nets:
-        st.write("🔎 **Сети:**")
+        # Перевод заголовка
+        n_head = "🔎 Сети:" if lang == 'ru' else "🔎 Syndromes:"
+        st.write(f"**{n_head}**")
+        
         networks = ["ДЭП", "МСА", "МКАС", "ТАЛАМ", "РЕТИК", "СТРИАР", "МПС"]
+        # Карта перевода для западных спецов
+        net_map = {"ДЭП":"Vascular", "МСА":"MSA", "МКАС":"CBS", "ТАЛАМ":"Thalamic", "РЕТИК":"Reticular", "СТРИАР":"Striatal", "МПС":"Psychosom"}
+        
         for net in networks:
             is_active = any(p.upper() == net.upper() for p in presets)
             bg = "#FF4B4B" if is_active else "#1c1f26"
             tc = "white" if is_active else "#444"
-            st.markdown(f'<div style="background:{bg}; color:{tc}; padding:4px; border-radius:5px; margin-bottom:4px; text-align:center; font-size:0.7em; font-weight:bold; border:1px solid #333;">{net}</div>', unsafe_allow_html=True)
+            
+            # Если не RU — берем из карты перевода
+            display_name = net_map.get(net, net) if lang != 'ru' else net
+            
+            st.markdown(f'<div style="background:{bg}; color:{tc}; padding:4px; border-radius:5px; margin-bottom:4px; text-align:center; font-size:0.7em; font-weight:bold; border:1px solid #333;">{display_name}</div>', unsafe_allow_html=True)
 
     st.markdown("---")
     area_label = {"ru": "Текст заключения:", "en": "Clinical Report:", "es": "Informe Clínico:", "pt": "Relatório Clínico:"}.get(lang, "Report:")
