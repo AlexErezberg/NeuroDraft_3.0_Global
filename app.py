@@ -700,10 +700,11 @@ class NeuroDraftAssistant:
             res_summary = " ".join([p.strip() for p in final if p.strip()])
 
             final_report = (
+                f"{scr_header}" # <-- ВСТАВИЛИ СКРИНИНГ В САМЫЙ ВЕРХ, НАД ВСЕМИ ШАПКАМИ
                 f"{h1}:\n{status_text}\n\n"
                 f"{h2}:\n{' '.join(f_res)}\n\n"
-                f"{h3}:\n{res_summary}\n"
-                f"{icf_block}\n\n"
+                f"{h3}:\n{res_summary}"
+                f"{icf_block}"
                 f"{rec_text}"
             )
             return final_report
