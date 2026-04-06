@@ -983,13 +983,13 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
         
         # НОВЫЙ МАППИНГ СЕТЕВЫХ СИНДРОМОВ
         net_map = {
-            "vci-svd": "Vascular", 
-            "msa": "MSA", 
-            "ccas": "CCAS", 
-            "thalam": "Thalamic", 
-            "retic": "Reticular", 
-            "striar": "Striatal", 
-            "callosal-ds": "Callosal"
+            "vci-svd": {"ru": "ДЭП (Vasc)", "en": "Vascular"}, 
+            "msa": {"ru": "МСА (P+)", "en": "MSA"}, 
+            "ccas": {"ru": "КБД/МКАС", "en": "CCAS/CBS"}, 
+            "thalam": {"ru": "Таламич.", "en": "Thalamic"}, 
+            "retic": {"ru": "Ретикуляр.", "en": "Reticular"}, 
+            "striar": {"ru": "Стриарный", "en": "Striatal"}, 
+            "callosal-ds": {"ru": "МПС (Callos)", "en": "Callosal"}
         }
         
         for code, label in net_map.items():
