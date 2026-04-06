@@ -222,34 +222,36 @@ class NeuroDraftAssistant:
                 "mild":     {"ru": "легкое",     "en": "mild",     "es": "leve",     "pt": "leve"}
             }
 
-            # 3. ЛОГИКА ОПРЕДЕЛЕНИЯ И ВЫВОДА (FIXED)
+            # 3. ЛОГИКА ОПРЕДЕЛЕНИЯ И ВЫВОДА (ИСПРАВЛЕНО ПОД ЧИСЛА)
+            # Проверяем наличие баллов (учитываем, что 0 - это тоже балл)
             if moca is not None or mmse is not None or gds is not None:
-                # Оценка когнитивной тяжести - работаем напрямую с числами
-                try:
-                    m_val = int(moca) if moca is not None else 30
-                except:
-                    m_val = 30
+                # Безопасно переводим в число, если прилетела строка, или берем как есть
+                def to_int(v, default):
+                    try: return int(v)
+                    except: return default
 
+                m_val = to_int(moca, 30)
+                g_val = to_int(gds, 0)
+
+                # Оценка когнитивной тяжести
                 if m_val < 11: s_key = "severe"
                 elif m_val < 19: s_key = "moderate"
-                else: s_key = "mild"
+                elif m_val < 26: s_key = "mild"
+                else: s_key = "normal" # Добавим ключ для нормы, если его нет
 
-                # Оценка депрессии по GDS
+                # Оценка депрессии (GDS)
                 dep_add = ""
-                try:
-                    gv = int(gds) if gds is not None else 0
-                    if gv > 9:
-                        dep_add = {"ru": " и тяжелую депрессию", "en": " and severe depression", "es": " y depresión grave", "pt": " e depressão grave"}.get(lang, "")
-                    elif gv > 4:
-                        dep_add = {"ru": " и легкую депрессию", "en": " and mild depression", "es": " y depresión leve", "pt": " e depressão leve"}.get(lang, "")
-                except:
-                    pass
+                if g_val > 9:
+                    dep_add = {"ru": " и тяжелую депрессию", "en": " and severe depression"}.get(lang, "")
+                elif g_val > 4:
+                    dep_add = {"ru": " и легкую депрессию", "en": " and mild depression"}.get(lang, "")
 
-                s_word = sev_map[s_key].get(lang, sev_map[s_key]["en"])
+                # Если в sev_map нет "normal", подставим "нормальное состояние" или пропустим
+                s_word = sev_map.get(s_key, {"ru": "сохранное"}).get(lang, "normal")
                 tpl = scr_tpl.get(lang, scr_tpl["en"])
 
-                # Формируем итоговую строку
-                final.append(tpl.format(
+                # ВАЖНО: Вставляем в НАЧАЛО списка final, чтобы это было первой строкой Заключения
+                final.insert(0, tpl.format(
                     m=moca if moca is not None else "—",
                     mm=mmse if mmse is not None else "—",
                     g=gds if gds is not None else "—",
