@@ -686,7 +686,13 @@ class NeuroDraftAssistant:
             h1 = ui.get('status_header', {}).get(lang, 'MSE')
             h2 = ui.get('results_header', {}).get(lang, 'PROFILE')
             h3 = ui.get('conclusion_header', {}).get(lang, 'SUMMARY')
-
+            
+            # --- ВОТ ЭТА СТРОКА СПАСЕТ ТВОЮ МОКУ ---
+            # Собираем скрининг в одну строку, если он есть в списке final
+            scr_header = final[0] + "\n\n" if (moca or mmse or gds) and final else ""
+            # А из остального текста (res_summary) его уберем, чтобы не дублировать
+            res_summary = " ".join([p.strip() for p in final[1:] if p.strip()]) if scr_header else " ".join([p.strip() for p in final if p.strip()])
+            
             rec_text = ""
             if unique_res:
                 rec_text = f"{r_h.upper()}:\n" + "\n\n".join(unique_res)
