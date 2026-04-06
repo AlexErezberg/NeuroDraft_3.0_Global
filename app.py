@@ -333,7 +333,6 @@ class NeuroDraftAssistant:
                     final.append(" ".join(mri_matches))
 
             # --- 5.1. АЛГОРИТМ ВЫДЕЛЕНИЯ ВЕДУЩИХ ПИКОВ (MMPI-STYLE) ---
-            final = []
 
             # 🔥 ШАГ 0: ИНИЦИАЛИЗАЦИЯ ВСЕХ ПЕРЕМЕННЫХ (ЧТОБЫ НЕ БЫЛО ОШИБОК)
             st_key = str(t_k)
