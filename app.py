@@ -919,13 +919,13 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
     elif p_type == "8": core_label = "Sch"
     elif p_type in ["0", "0т", "0*", "0+", "0-", "00"]: core_label = "N"
 
-    # 2. БУСТЕРЫ
+    # 2. БУСТЕРЫ (БЕЗ ИЗМЕНЕНИЙ)
     is_organ = p_type in ["1", "2", "3", "4", "5"]
     b1 = 3 if any(p in ["н", "Апат", "асте"] for p in presets) and is_organ else 0
     b2 = 3 if any(p in ["Асенс", "Ааф", "Аак", "Асем", "Апркин", "Апркон", "АгнП", "АгнЛ", "неглект"] for p in presets) and is_organ else 0
     b3 = 3 if any(p in ["праврег", "леврег", "Аэф", "Апрдин"] for p in presets) and is_organ else 0
 
-    # 3. ГРАФИК (Исправлено сложение списков)
+    # 3. ГРАФИК (Техническая правка замыкания цикла)
     r_vals = scores + [scores[0]]
     theta_vals = f_names + [f_names[0]]
     
@@ -957,7 +957,6 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
 
     with c_bl:
         st.write(f"**{ui_bl}**")
-        # Проверка активности блоков
         active_states = [
             (scores[0] + scores[6] + b1 >= 3),
             (scores[1] + scores[2] + scores[5] + b2 >= 3),
