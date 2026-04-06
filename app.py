@@ -222,33 +222,39 @@ class NeuroDraftAssistant:
                 "mild":     {"ru": "легкое",     "en": "mild",     "es": "leve",     "pt": "leve"}
             }
 
-            # 3. ЛОГИКА ОПРЕДЕЛЕНИЯ И ВЫВОДА
-            if moca or mmse or gds:
-                # Оценка когнитивной тяжести
-                m_val = int(moca) if (moca and str(moca).isdigit()) else 30
+            # 3. ЛОГИКА ОПРЕДЕЛЕНИЯ И ВЫВОДА (FIXED)
+            if moca is not None or mmse is not None or gds is not None:
+                # Оценка когнитивной тяжести - работаем напрямую с числами
+                try:
+                    m_val = int(moca) if moca is not None else 30
+                except:
+                    m_val = 30
+
                 if m_val < 11: s_key = "severe"
                 elif m_val < 19: s_key = "moderate"
                 else: s_key = "mild"
 
-                # Оценка депрессии по GDS (триггер для текста)
+                # Оценка депрессии по GDS
                 dep_add = ""
-                if gds and str(gds).isdigit():
-                    gv = int(gds)
+                try:
+                    gv = int(gds) if gds is not None else 0
                     if gv > 9:
-                        dep_add = {"ru": " и тяжелую депрессию", "en": " and severe depression", "es": " y depresión grave", "pt": " e depressão grave"}.get(lang)
+                        dep_add = {"ru": " и тяжелую депрессию", "en": " and severe depression", "es": " y depresión grave", "pt": " e depressão grave"}.get(lang, "")
                     elif gv > 4:
-                        dep_add = {"ru": " и легкую депрессию", "en": " and mild depression", "es": " y depresión leve", "pt": " e depressão leve"}.get(lang)
+                        dep_add = {"ru": " и легкую депрессию", "en": " and mild depression", "es": " y depresión leve", "pt": " e depressão leve"}.get(lang, "")
+                except:
+                    pass
 
                 s_word = sev_map[s_key].get(lang, sev_map[s_key]["en"])
                 tpl = scr_tpl.get(lang, scr_tpl["en"])
 
-                # Формируем строку: m=MoCA, mm=MMSE, g=GDS, s=степень, d=хвост про депрессию
+                # Формируем итоговую строку
                 final.append(tpl.format(
-                    m=moca or "—",
-                    mm=mmse or "—",
-                    g=gds or "—",
+                    m=moca if moca is not None else "—",
+                    mm=mmse if mmse is not None else "—",
+                    g=gds if gds is not None else "—",
                     s=s_word,
-                    d=dep_add or ""
+                    d=dep_add
                 ))
 
             # MRI Сцепка (Match or Silent)
