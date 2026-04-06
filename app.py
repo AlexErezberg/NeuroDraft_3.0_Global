@@ -736,21 +736,23 @@ matrix = load_matrix()
 
 # --- ВОТ ЭТОГО У ТЕБЯ НЕ ХВАТАЕТ (ВСТАВЬ В НАЧАЛО) ---
 def reset_app():
-    if "fio_input" in st.session_state: st.session_state["fio_input"] = "Иванов И.И."
+    # Очищаем данные пациента и психометрию в памяти
+    if "fio_input" in st.session_state: st.session_state["fio_input"] = "Patient ID"
     if "age_input" in st.session_state: st.session_state["age_input"] = 65
-    if "profile_select" in st.session_state: st.session_state["profile_select"] = "0*"
-    for i in range(10):
-        if f"s_{i}" in st.session_state: st.session_state[f"s_{i}"] = 0
-    if "adj_ms" in st.session_state: st.session_state["adj_ms"] = []
-    if "tags_ms" in st.session_state: st.session_state["tags_ms"] = []
     
-    # --- НОВЫЕ ПАРАМЕТРЫ ДЛЯ NEURODRAFT 3.0 ---
-    if "lang_sel" in st.session_state: st.session_state["lang_sel"] = "en"
+    # Новые поля психометрии — возвращаем к дефолту
     if "moca_in" in st.session_state: st.session_state["moca_in"] = 30
     if "mmse_in" in st.session_state: st.session_state["mmse_in"] = 30
     if "gds_in" in st.session_state: st.session_state["gds_in"] = 0
-    # ------------------------------------------
     
+    if "adj_ms" in st.session_state: st.session_state["adj_ms"] = []
+    if "tags_ms" in st.session_state: st.session_state["tags_ms"] = []
+    
+    # Сбрасываем все ползунки (очищаем их ключи s_i_lang)
+    for key in list(st.session_state.keys()):
+        if key.startswith("s_"):
+            st.session_state[key] = 0
+            
     st.rerun()
 
 st.set_page_config(page_title="NeuroDraft 3.0", layout="wide")
@@ -858,6 +860,7 @@ with st.sidebar:
     
     c_m1, c_m2, c_m3 = st.columns(3)
     with c_m1:
+        # Важно: key="moca_in" должен совпадать с тем, что в reset_app и в кнопке запуска
         moca = st.number_input("MoCA", 0, 30, 30, key="moca_in")
     with c_m2:
         mmse = st.number_input("MMSE", 0, 30, 30, key="mmse_in")
@@ -998,8 +1001,8 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
         # НОВЫЙ МАППИНГ СЕТЕВЫХ СИНДРОМОВ (Точечная правка)
         net_map = {
             "vci-svd": {"ru": "ДЭП (Vasc)", "en": "Vascular"}, 
-            "msa": {"ru": "МСА (P+)", "en": "MSA"}, 
-            "ccas": {"ru": "КБД/МКАС", "en": "CCAS/CBS"}, 
+            "msa": {"ru": "МСА", "en": "MSA"}, 
+            "ccas": {"ru": "МКАС", "en": "CCAS"}, 
             "thalam": {"ru": "Таламич.", "en": "Thalamic"}, 
             "retic": {"ru": "Ретикуляр.", "en": "Reticular"}, 
             "striar": {"ru": "Стриарный", "en": "Striatal"}, 
@@ -1037,25 +1040,29 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
 btn_label = "🚀 GENERATE REPORT" if lang != 'ru' else "🚀 СГЕНЕРИРОВАТЬ ПРОТОКОЛ"
 
 if st.button(btn_label):
-    # Достаем ПСИХОМЕТРИЮ напрямую из ключей session_state
-    moca_val = st.session_state.get("moca_in", 30)
-    mmse_val = st.session_state.get("mmse_in", 30)
-    gds_val = st.session_state.get("gds_in", 0)
+    # Достаем значения психометрии из сессии ПРЯМО ПЕРЕД ЗАПУСКОМ
+    m_val = st.session_state.get("moca_in", 30)
+    mm_val = st.session_state.get("mmse_in", 30)
+    g_val = st.session_state.get("gds_in", 0)
 
+    # Собираем код
     full_code = f"{p_type}{p_gen}/{''.join(map(str, scores))}"
+    
+    # Инициализируем движок
     engine = NeuroDraftAssistant(matrix)
     
-    # ПЕРЕДАЕМ ПРОВЕРЕННЫЕ ЗНАЧЕНИЯ
+    # Запускаем генерацию (ПЕРЕДАЕМ ПСИХОМЕТРИЮ)
     report = engine.run(
         code_str=full_code, 
         pr_in=",".join(presets), 
         t_in=",".join(selected_tags),
         lang=lang,
-        moca=moca_val, 
-        mmse=mmse_val, 
-        gds=gds_val
+        moca=m_val, 
+        mmse=mm_val, 
+        gds=g_val
     )
     
+    # Показываем результат
     show_result_dialog(
         report_text=report, 
         fio_name=fio, 
