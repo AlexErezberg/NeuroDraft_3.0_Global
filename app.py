@@ -981,7 +981,7 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
         n_head = "🔎 Сети:" if lang == 'ru' else "🔎 Syndromes:"
         st.write(f"**{n_head}**")
         
-        # НОВЫЙ МАППИНГ СЕТЕВЫХ СИНДРОМОВ
+        # НОВЫЙ МАППИНГ СЕТЕВЫХ СИНДРОМОВ (Точечная правка)
         net_map = {
             "vci-svd": {"ru": "ДЭП (Vasc)", "en": "Vascular"}, 
             "msa": {"ru": "МСА (P+)", "en": "MSA"}, 
@@ -992,12 +992,16 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
             "callosal-ds": {"ru": "МПС (Callos)", "en": "Callosal"}
         }
         
-        for code, label in net_map.items():
-            # Проверяем наличие ключа в пресетах (регистронезависимо)
+        for code, names in net_map.items():
+            # Проверяем наличие ключа в пресетах (строго по твоим латинским ключам)
             is_active = any(p.lower() == code.lower() for p in presets)
             bg = "#FF4B4B" if is_active else "#1c1f26"
             tc = "white" if is_active else "#444"
-            st.markdown(f'<div style="background:{bg}; color:{tc}; padding:4px; border-radius:5px; margin-bottom:4px; text-align:center; font-size:0.6em; font-weight:bold; border:1px solid #333;">{label}</div>', unsafe_allow_html=True)
+            
+            # Выбираем, что написать на плашке
+            label = names.get(lang, names["en"])
+            
+            st.markdown(f'<div style="background:{bg}; color:{tc}; padding:4px; border-radius:5px; margin-bottom:4px; text-align:center; font-size:0.65em; font-weight:bold; border:1px solid #333;">{label}</div>', unsafe_allow_html=True)
 
     st.markdown("---")
     area_label = {"ru": "Текст заключения:", "en": "Clinical Report:", "es": "Informe Clínico:", "pt": "Relatório Clínico:"}.get(lang, "Report:")
