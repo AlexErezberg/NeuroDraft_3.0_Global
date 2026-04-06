@@ -1037,24 +1037,13 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
 btn_label = "🚀 GENERATE REPORT" if lang != 'ru' else "🚀 СГЕНЕРИРОВАТЬ ПРОТОКОЛ"
 
 if st.button(btn_label):
+    # Внутренний код СТРОГО с отступом в 4 пробела
     full_code = f"{p_type}{p_gen}/{''.join(map(str, scores))}"
     
-    # Инициализируем ассистента
+    # Инициализируем движок (проверь имя класса: Assistant или Master)
     engine = NeuroDraftAssistant(matrix)
     
-    # Запуск движка
-    report = engine.run(
-        code_str=full_code, 
-        pr_in=",".join(presets), 
-        t_in=",".join(selected_tags),
-        lang=lang
-    )
-
-    if st.button(btn_label):
-    full_code = f"{p_type}{p_gen}/{''.join(map(str, scores))}"
-    engine = NeuroDraftAssistant(matrix) # или NeuroExpertMaster
-    
-    # ПЕРЕДАЕМ ПСИХОМЕТРИЮ В ДВИЖОК
+    # Запуск движка с пробросом ПСИХОМЕТРИИ
     report = engine.run(
         code_str=full_code, 
         pr_in=",".join(presets), 
@@ -1065,7 +1054,7 @@ if st.button(btn_label):
         gds=gds
     )
     
-    # ВЫЗЫВАЕМ ДИАЛОГ ТОЛЬКО ОДИН РАЗ
+    # Вызов диалога (ОДИН РАЗ)
     show_result_dialog(
         report_text=report, 
         fio_name=fio, 
