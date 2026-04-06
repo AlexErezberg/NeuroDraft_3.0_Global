@@ -851,6 +851,20 @@ with st.sidebar:
     recs_h = ui.get("recs_header", {}).get(lang, "RECOMMENDATIONS")
     # ----------------------------
 
+    # --- БЛОК ПСИХОМЕТРИИ ---
+    st.markdown("---")
+    ps_h = {"ru": "📝 ПСИХОМЕТРИЯ", "en": "📝 PSYCHOMETRICS", "es": "📝 PSICOMETRÍA", "pt": "📝 PSICOMETRIA"}.get(lang, "PSYCHOMETRICS")
+    st.subheader(ps_h)
+    
+    c_m1, c_m2, c_m3 = st.columns(3)
+    with c_m1:
+        moca = st.number_input("MoCA", 0, 30, 30, key="moca_in")
+    with c_m2:
+        mmse = st.number_input("MMSE", 0, 30, 30, key="mmse_in")
+    with c_m3:
+        gds = st.number_input("GDS", 0, 15, 0, key="gds_in")
+    # ----------------------------
+    
     st.header("📋 Пациент")
     
     fio = st.text_input("ФИО", "Иванов И.И.", key="fio_input")
