@@ -931,21 +931,22 @@ with st.sidebar:
     """, unsafe_allow_html=True)
     
 # --- 3. ЦЕНТРАЛЬНОЕ ПОЛЕ (ДОМЕНЫ + ОБЪЕКТИВКА: МРТ & ШКАЛЫ) ---
-# Сетка: Заголовок (35%), МРТ (35%), и три шкалы по 10%
+# Сетка: Заголовок(25%), Scoring(15%), МРТ(30%), Шкалы(10% x 3)
 c_tit, c_scr, c_mri, c_m1, c_m2, c_m3 = st.columns([0.25, 0.15, 0.30, 0.1, 0.1, 0.1])
 
 with c_tit:
-domains_h = {
-    "ru": "🧠 НЕЙРОКОГНИТИВНЫЕ ДОМЕНЫ:", 
-    "en": "🧠 NEUROCOGNITIVE DOMAINS:", 
-    "es": "🧠 DOMINIOS NEUROCOGNITIVOS:", 
-    "pt": "🧠 DOMÍNIOS NEUROCOGNITIVOS:"
-}.get(lang, "🧠 DOMAINS:")
-    st.subheader(f"🧠 {domains_title}")
+    # Локализованный заголовок доменов
+    domains_h = {
+        "ru": "НЕЙРОКОГНИТИВНЫЕ ДОМЕНЫ", 
+        "en": "NEUROCOGNITIVE DOMAINS", 
+        "es": "DOMINIOS NEUROCOGNITIVOS", 
+        "pt": "DOMÍNIOS NEUROCOGNITIVOS"
+    }.get(lang, "DOMAINS")
+    st.subheader(f"🧠 {domains_h}")
 
 with c_scr:
     st.caption("SCORING SYSTEM")
-    # Добавил T-Scores для США и C-Scores для Европы
+    # Твой селектор выбора системы оценки (Luria Raw, Z-Score и т.д.)
     scale_type = st.selectbox("Scale", ["Luria Raw", "Z-Score", "T-Score", "Percentile", "Qualitative"], key="scale_sel", label_visibility="collapsed")
 
 with c_mri:
