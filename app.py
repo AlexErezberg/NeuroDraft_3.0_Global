@@ -904,11 +904,16 @@ with st.sidebar:
     
 # --- 3. ЦЕНТРАЛЬНОЕ ПОЛЕ (ДОМЕНЫ + ОБЪЕКТИВКА: МРТ & ШКАЛЫ) ---
 # Сетка: Заголовок (35%), МРТ (35%), и три шкалы по 10%
-c_tit, c_mri, c_m1, c_m2, c_m3 = st.columns([0.35, 0.35, 0.1, 0.1, 0.1])
+c_tit, c_scr, c_mri, c_m1, c_m2, c_m3 = st.columns([0.25, 0.15, 0.30, 0.1, 0.1, 0.1])
 
 with c_tit:
     domains_title = ui.get('status_header', {}).get(lang, 'NEUROCOGNITIVE DOMAINS')
     st.subheader(f"🧠 {domains_title}")
+
+with c_scr:
+    st.caption("SCORING SYSTEM")
+    # Добавил T-Scores для США и C-Scores для Европы
+    scale_type = st.selectbox("Scale", ["Luria Raw", "Z-Score", "T-Score", "Percentile", "Qualitative"], key="scale_sel", label_visibility="collapsed")
 
 with c_mri:
     st.caption("MRI / CT LOCALIZATION")
@@ -939,6 +944,16 @@ with c_m3:
 
 st.markdown("---")
 
+# СЛОВАРЬ КОНВЕРТАЦИИ
+mapping = {
+    "Luria Raw":  ["0", "1", "2", "3", "4", "5"],
+    "Z-Score":    ["Z: 0.0", "Z: -1.0", "Z: -1.5", "Z: -2.0", "Z: -2.5", "Z: < -3.0"],
+    "T-Score":    ["T: 50", "T: 40", "T: 35", "T: 30", "T: 25", "T: < 20"],
+    "Percentile": ["99%", "84%", "50%", "16%", "2%", "< 1%"],
+    "Qualitative": ["Normal", "Weak", "Mild", "Mod.", "Sev.", "Prof."]
+}
+current_labels = mapping.get(scale_type, mapping["Luria Raw"])
+
 # Логика доменов (твой оригинал)
 domain_keys = [
     "attention", "visual_gnosis", "spatial", "dynamic_praxis", 
@@ -954,7 +969,14 @@ for k in domain_keys:
 
 scores = []
 for i, name in enumerate(f_names):
-    scores.append(st.slider(f"{i+1}. {name}", 0, 5, 0, key=f"s_{i}_{lang}"))
+    # Достаем текущий балл, чтобы подставить нужную метку в название ползунка
+    # Если юзер еще не трогал ползунок — берем 0
+    curr_val = st.session_state.get(f"s_{i}_{lang}", 0)
+    label = current_labels[curr_val]
+    
+    # Рисуем ползунок. В заголовке будет: "1. Внимание (Z: -1.5)"
+    val = st.slider(f"{i+1}. {name} ({label})", 0, 5, key=f"s_{i}_{lang}")
+    scores.append(val)
 
 # --- ФУНКЦИЯ ДИАЛОГОВОГО ОКНА ---
 @st.dialog("📄 ИТОГОВЫЙ ПРОТОКОЛ", width="large")
