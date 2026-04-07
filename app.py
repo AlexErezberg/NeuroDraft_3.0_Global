@@ -956,16 +956,21 @@ current_labels = mapping.get(scale_type, mapping["Luria Raw"])
 
 st.markdown("""
     <style>
-    /* Скрываем всплывающее значение (tooltip) над ползунком */
-    div[data-testid="stTickBarMin"], 
-    div[data-testid="stTickBarMax"], 
-    div[data-role="tooltip"] {
+    /* 1. Скрываем пузырь с цифрой над ползунком (Thumb Value) */
+    div[data-testid="stThumbValue"] {
         display: none !important;
     }
-    /* Делаем саму линию ползунка чуть чище */
-    .stSlider [data-baseweb="slider"] {
-        margin-top: 10px;
-        margin-bottom: 20px;
+    
+    /* 2. Скрываем цифры 0 и 5 по бокам (Tick Bar) */
+    div[data-testid="stTickBarMin"], 
+    div[data-testid="stTickBarMax"] {
+        display: none !important;
+    }
+
+    /* 3. Убираем лишние отступы, чтобы ползунки стояли плотнее */
+    .stSlider {
+        margin-top: -20px;
+        margin-bottom: -10px;
     }
     </style>
 """, unsafe_allow_html=True)
