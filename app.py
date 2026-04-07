@@ -30,14 +30,13 @@ class NeuroDraftAssistant:
         # Прокидываем переменную data для старой логики
         data = self.lib
         try:
+            # ЧИСТКА ТЕГОВ (Теперь внутри try - без ошибок)
+            tags = [t.strip().lower() for t in t_in.split(',') if t.strip()]
+            
             head, s_raw = code_str.split('/')
             raw_typ = head.rstrip('мж')
             # Дальше твой оригинальный код с отступом 12 пробелов
-        tags = [t.strip() for t in t_in.split(',') if t.strip()]
             
-        except Exception as e:
-            return f"❌ Ошибка в run: {e}"
-
         except Exception as e:
             return f"❌ Ошибка в run: {e}"
 
