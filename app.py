@@ -820,7 +820,7 @@ if not st.session_state["auth"]:
     # Твоя монолитная шапка (Draft)
     # ... (вставь сюда свой блок с градиентом и мозгом) ...
     
-    pwd_input = st.text_input("🔑 Доступ к системе:", type="password")
+    pwd_input = st.text_input("🔑 Password:", type="password")
     if pwd_input == PASSWORD:
         # ЗАСТАВКА (Строго 1.5 сек)
         with st.empty():
@@ -835,7 +835,7 @@ if not st.session_state["auth"]:
             st.session_state["auth"] = True
             st.rerun()
     elif pwd_input:
-        st.error("❌ Отказано")
+        st.error("❌ Forbidden")
     st.stop() # ОСТАНАВЛИВАЕМ ВСЁ ДО ВВОДА ПАРОЛЯ
 
 # --- 2. ЛЕВАЯ ПАНЕЛЬ (ПОЯВИТСЯ ТОЛЬКО ПОСЛЕ ПАРОЛЯ) ---
