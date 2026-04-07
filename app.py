@@ -935,7 +935,12 @@ with st.sidebar:
 c_tit, c_scr, c_mri, c_m1, c_m2, c_m3 = st.columns([0.25, 0.15, 0.30, 0.1, 0.1, 0.1])
 
 with c_tit:
-    domains_title = ui.get('status_header', {}).get(lang, 'NEUROCOGNITIVE DOMAINS')
+domains_h = {
+    "ru": "🧠 НЕЙРОКОГНИТИВНЫЕ ДОМЕНЫ:", 
+    "en": "🧠 NEUROCOGNITIVE DOMAINS:", 
+    "es": "🧠 DOMINIOS NEUROCOGNITIVOS:", 
+    "pt": "🧠 DOMÍNIOS NEUROCOGNITIVOS:"
+}.get(lang, "🧠 DOMAINS:")
     st.subheader(f"🧠 {domains_title}")
 
 with c_scr:
