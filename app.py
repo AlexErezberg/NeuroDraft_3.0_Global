@@ -847,20 +847,30 @@ with st.sidebar:
         except: st.write("🧠")
             
     # 2. МИКРО-КНОПКИ В ОДИН РЯД (Сброс и Гайд теперь тут!)
+    ui_nav = {
+        "ru": {"reset": "♻️ СБРОС", "guide": "📚 ГАЙД"},
+        "en": {"reset": "♻️ RESET", "guide": "📚 GUIDE"},
+        "es": {"reset": "♻️ REINICIAR", "guide": "📚 GUÍA"},
+        "pt": {"reset": "♻️ REINICIAR", "guide": "📚 GUIA"}
+    }.get(lang, "en")
+
     c_rst, c_gde = st.columns(2)
     with c_rst:
-        if st.button("♻️ СБРОС", type="secondary", use_container_width=True):
+        # Название кнопки теперь зависит от выбранного языка
+        if st.button(ui_nav["reset"], type="secondary", use_container_width=True):
             reset_app()
     with c_gde:
         try:
             with open("AppGuide.pdf", "rb") as f:
-                st.download_button("📚 ГАЙД", f, "AppGuide.pdf", use_container_width=True)
-        except: pass
+                # Название кнопки загрузки тоже локализовано
+                st.download_button(ui_nav["guide"], f, "AppGuide.pdf", use_container_width=True)
+        except: 
+            pass
 
     # --- ВСТАВКА: ВЫБОР ЯЗЫКА ---
     st.markdown("---")
     # Английский по умолчанию (index=0), Русский в конце
-    lang = st.selectbox("🌐 LANGUAGE / ЯЗЫК", ["en", "es", "pt", "ru"], index=0, key="lang_sel")
+    lang = st.selectbox("🌐 LANGUAGE", ["en", "es", "pt", "ru"], index=0, key="lang_sel")
     
     # Сразу тянем переводы заголовков из твоего массива massive-mulilang.json
     ui = matrix.get("ui_labels", {})
@@ -872,6 +882,7 @@ with st.sidebar:
     
     # --- 2. ЛОКАЛИЗАЦИЯ ПАСПОРТУХИ (ВСТАВЛЯТЬ СЮДА) ---
     p_header = {"ru": "📋 ПАЦИЕНТ", "en": "📋 PATIENT", "es": "📋 PACIENTE", "pt": "📋 PACIENTE"}.get(lang, "📋 PATIENT")
+    fio = st.text_input(fio_label, fio_def, key=f"fio_input_{lang}")
     fio_label = {"ru": "ФИО / ID", "en": "Name / ID", "es": "Nombre / ID", "pt": "Nome / ID"}.get(lang)
     fio_def = {"ru": "Иванов И.И.", "en": "Patient ID", "es": "ID del Paciente", "pt": "ID do Paciente"}.get(lang)
     age_label = {"ru": "Возраст", "en": "Age", "es": "Edad", "pt": "Idade"}.get(lang)
