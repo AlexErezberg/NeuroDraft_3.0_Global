@@ -909,10 +909,15 @@ with st.sidebar:
     st.markdown("---")
     
     # Надстройки и Теги
+    adj_h = {"ru": "🛠 Надстройки", "en": "🛠 Adjustments", "es": "🛠 Ajustes", "pt": "🛠 Ajustes"}.get(lang, "Adjustments")
+    tag_h = {"ru": "🏷 Теги", "en": "🏷 Tags", "es": "🏷 Etiquetas", "pt": "🏷 Tags"}.get(lang, "Tags")
+
+    # Надстройки и Теги (сохранение оригинальной логики ключей)
     adj_keys = list(matrix.get("phenomenology_adjustments", {}).keys())
-    presets = st.multiselect("🛠 Надстройки", adj_keys, key="adj_ms")
+    presets = st.multiselect(adj_h, adj_keys, key="adj_ms")
+    
     tag_keys = list(matrix.get("tags", {}).keys())
-    selected_tags = st.multiselect("🏷 Теги", tag_keys, key="tags_ms")
+    selected_tags = st.multiselect(tag_h, tag_keys, key="tags_ms")
 
     # ТВОИ КРЕДИТЫ (Cognicore Systems)
     st.markdown("""
