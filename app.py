@@ -1117,21 +1117,30 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
             
             st.markdown(f'<div style="background:{bg}; color:{tc}; padding:4px; border-radius:5px; margin-bottom:4px; text-align:center; font-size:0.65em; font-weight:bold; border:1px solid #333;">{label}</div>', unsafe_allow_html=True)
 
-    st.markdown("---")
-    area_label = {"ru": "Текст заключения:", "en": "Clinical Report:", "es": "Informe Clínico:", "pt": "Relatório Clínico:"}.get(lang, "Report:")
-    st.text_area(area_label, report_text, height=300)
+        st.markdown("---")
+    # Локализация заголовка текстового поля и кнопок
+    ui_diag = {
+        "ru": {"area": "Текст заключения:", "word": "📥 ВОРД", "copy": "📋 КОПИРОВАТЬ", "exit": "❌ ВЫХОД", "file": "ПРОТОКОЛ"},
+        "en": {"area": "Clinical Report:", "word": "📥 WORD", "copy": "📋 COPY", "exit": "❌ EXIT", "file": "PROTOCOL"},
+        "es": {"area": "Informe Clínico:", "word": "📥 WORD", "copy": "📋 COPIAR", "exit": "❌ SALIR", "file": "PROTOCOLO"},
+        "pt": {"area": "Relatório Clínico:", "word": "📥 WORD", "copy": "📋 COPIAR", "exit": "❌ SAIR", "file": "PROTOCOLO"}
+    }.get(lang, "en")
+
+    st.text_area(ui_diag["area"], report_text, height=300)
     
     c1, c2, c3 = st.columns(3)
     with c1:
         doc = Document()
-        doc.add_paragraph(f"ПРОТОКОЛ: {fio_name}\n\n{report_text}")
+        # Внутри файла тоже пишем локализованный заголовок
+        doc.add_paragraph(f"{ui_diag['file']}: {fio_name}\n\n{report_text}")
         bio = io.BytesIO(); doc.save(bio)
-        st.download_button("📥 WORD", bio.getvalue(), f"{fio_name}.docx", use_container_width=True)
+        st.download_button(ui_diag["word"], bio.getvalue(), f"{fio_name}.docx", use_container_width=True)
     with c2:
-        if st.button("📋 COPY", use_container_width=True):
+        if st.button(ui_diag["copy"], use_container_width=True):
             st.code(report_text, language=None)
     with c3:
-        if st.button("❌ EXIT", use_container_width=True): st.rerun()
+        if st.button(ui_diag["exit"], use_container_width=True): 
+            st.rerun()
         
 # --- 5. САМА КНОПКА ЗАПУСКА ---
 btn_label = "🚀 GENERATE REPORT" if lang != 'ru' else "🚀 СГЕНЕРИРОВАТЬ ПРОТОКОЛ"
