@@ -969,8 +969,8 @@ st.markdown("""
 
     /* 3. Убираем лишние отступы, чтобы ползунки стояли плотнее */
     .stSlider {
-        margin-top: -20px;
-        margin-bottom: -10px;
+        margin-top: 0px;
+        margin-bottom: 10px;
     }
     </style>
 """, unsafe_allow_html=True)
