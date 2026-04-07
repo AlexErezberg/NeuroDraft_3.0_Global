@@ -880,17 +880,22 @@ with st.sidebar:
         except: 
             pass
     
-    # --- 2. ЛОКАЛИЗАЦИЯ ПАСПОРТУХИ (ВСТАВЛЯТЬ СЮДА) ---
+    # --- 2. ЛОКАЛИЗАЦИЯ ПАСПОРТУХИ ---
     p_header = {"ru": "📋 ПАЦИЕНТ", "en": "📋 PATIENT", "es": "📋 PACIENTE", "pt": "📋 PACIENTE"}.get(lang, "📋 PATIENT")
-    fio = st.text_input(fio_label, fio_def, key=f"fio_input_{lang}")
+    
+    # Сначала объявляем ПЕРЕМЕННЫЕ перевода
     fio_label = {"ru": "ФИО / ID", "en": "Name / ID", "es": "Nombre / ID", "pt": "Nome / ID"}.get(lang)
     fio_def = {"ru": "Иванов И.И.", "en": "Patient ID", "es": "ID del Paciente", "pt": "ID do Paciente"}.get(lang)
     age_label = {"ru": "Возраст", "en": "Age", "es": "Edad", "pt": "Idade"}.get(lang)
     sex_label = {"ru": "Пол", "en": "Sex", "es": "Sexo", "pt": "Sexo"}.get(lang)
     sex_options = {"ru": ["м", "ж"], "en": ["M", "F"], "es": ["M", "F"], "pt": ["M", "F"]}.get(lang)
+    type_label = {"ru": "Тип профиля", "en": "Profile Type", "es": "Tipo de Perfil", "pt": "Tipo de Perfil"}.get(lang)
 
+    # Теперь отрисовываем интерфейс (используя уже созданные переменные)
     st.header(p_header)
-    fio = st.text_input(fio_label, fio_def, key="fio_input")
+    
+    # Ключ fio_input_{lang} заставляет Стримлит менять дефолтное имя при смене языка
+    fio = st.text_input(fio_label, fio_def, key=f"fio_input_{lang}")
     
     c_age, c_sex = st.columns(2)
     with c_age:
@@ -898,9 +903,8 @@ with st.sidebar:
     with c_sex:
         p_gen = st.radio(sex_label, sex_options, horizontal=True)
 
-    # Тип профиля (локализованный заголовок)
-    type_label = {"ru": "Тип профиля", "en": "Profile Type", "es": "Tipo de Perfil", "pt": "Tipo de Perfil"}.get(lang) 
-    p_type = st.selectbox("Тип", ["0*", "0+", "00", "0w", "0-", "0000", "0", "0sleep", "1", "2", "3", "4", "5", "7", "8", "9"], key="profile_select")
+    # Тип профиля
+    p_type = st.selectbox(type_label, ["0*", "0+", "00", "0w", "0-", "0000", "0", "0sleep", "1", "2", "3", "4", "5", "7", "8", "9"], key="profile_select")
 
     st.markdown("---")
     
