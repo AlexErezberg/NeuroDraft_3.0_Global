@@ -967,22 +967,30 @@ for k in domain_keys:
     name = funcs.get(k, {}).get("label", {}).get(lang, k.upper())
     f_names.append(name)
 
+# 2. ИНИЦИАЛИЗИРУЕМ СПИСОК (чтобы не было NameError)
+scores = []
+
+# 3. ЦИКЛ ОТРИСОВКИ С ЦВЕТНОЙ МЕТРИКОЙ
 for i, name in enumerate(f_names):
-    # 1. Берем текущее значение
+    # Достаем текущий балл из памяти сессии
     curr_val = st.session_state.get(f"s_{i}_{lang}", 0)
+    
+    # Берем метку из выбранной Scoring System (Z-score, T-score и т.д.)
+    # Убедись, что переменная current_labels определена выше!
     label = current_labels[curr_val]
     
-    # 2. Цветовая кодировка для "захвата мира"
-    # Зеленый для нормы, красный для патологии
-    color = "#808495" # Дефолт (серый)
-    if curr_val >= 4: color = "#FF4B4B" # Грубая патология (красный)
-    elif curr_val >= 2: color = "#FFA500" # Умеренно (оранжевый)
+    # Цветовая индикация тяжести
+    color = "#808495" # Серый (Норма)
+    if curr_val >= 4: color = "#FF4B4B" # Красный (Грубо)
+    elif curr_val >= 2: color = "#FFA500" # Оранжевый (Умеренно)
 
-    # 3. Выводим заголовок с цветной меткой через markdown
-    st.markdown(f"**{i+1}. {name}** : <span style='color:{color}; font-size:1.1em;'>{label}</span>", unsafe_allow_html=True)
+    # Выводим заголовок: Название + Цветная "Зетка" или "Тэшка"
+    st.markdown(f"**{i+1}. {name}** : <span style='color:{color}; font-weight:bold;'>{label}</span>", unsafe_allow_html=True)
     
-    # 4. Сам ползунок БЕЗ подписи (label_visibility="collapsed")
-    val = st.slider(f"s_slider_{i}", 0, 5, key=f"s_{i}_{lang}", label_visibility="collapsed")
+    # Рисуем сам ползунок без лишнего текста
+    val = st.slider(f"s_slider_{i}_{lang}", 0, 5, key=f"s_{i}_{lang}", label_visibility="collapsed")
+    
+    # Добавляем значение в список для движка
     scores.append(val)
 
 # --- ФУНКЦИЯ ДИАЛОГОВОГО ОКНА ---
