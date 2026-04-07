@@ -870,18 +870,26 @@ with st.sidebar:
     recs_h = ui.get("recs_header", {}).get(lang, "RECOMMENDATIONS")
     # ----------------------------
     
-    st.header("📋 Пациент")
+    # --- 2. ЛОКАЛИЗАЦИЯ ПАСПОРТУХИ (ВСТАВЛЯТЬ СЮДА) ---
+    p_header = {"ru": "📋 ПАЦИЕНТ", "en": "📋 PATIENT", "es": "📋 PACIENTE", "pt": "📋 PACIENTE"}.get(lang, "📋 PATIENT")
+    fio_label = {"ru": "ФИО / ID", "en": "Name / ID", "es": "Nombre / ID", "pt": "Nome / ID"}.get(lang)
+    fio_def = {"ru": "Иванов И.И.", "en": "Patient ID", "es": "ID del Paciente", "pt": "ID do Paciente"}.get(lang)
+    age_label = {"ru": "Возраст", "en": "Age", "es": "Edad", "pt": "Idade"}.get(lang)
+    sex_label = {"ru": "Пол", "en": "Sex", "es": "Sexo", "pt": "Sexo"}.get(lang)
+    sex_options = {"ru": ["м", "ж"], "en": ["M", "F"], "es": ["M", "F"], "pt": ["M", "F"]}.get(lang)
+
+    st.header(p_header)
+    fio = st.text_input(fio_label, fio_def, key="fio_input")
     
-    fio = st.text_input("ФИО", "Иванов И.И.", key="fio_input")
-    
-    # Пол и Возраст в одну строку для компактности
-    c_age, c_sex = st.columns([1, 1])
+    c_age, c_sex = st.columns(2)
     with c_age:
-        age = st.number_input("Возраст", 1, 110, 65, key="age_input")
+        age = st.number_input(age_label, 1, 110, 65, key="age_input")
     with c_sex:
-        p_gen = st.radio("Пол", ["м", "ж"], horizontal=True)
-    
-    p_type = st.selectbox("Тип", ["0*", "0+", "00", "0т", "0-", "0000", "0", "0сон", "1", "2", "3", "4", "5", "7", "8", "9", "9гэ"], key="profile_select")
+        p_gen = st.radio(sex_label, sex_options, horizontal=True)
+
+    # Тип профиля (локализованный заголовок)
+    type_label = {"ru": "Тип профиля", "en": "Profile Type", "es": "Tipo de Perfil", "pt": "Tipo de Perfil"}.get(lang) 
+    p_type = st.selectbox("Тип", ["0*", "0+", "00", "0w", "0-", "0000", "0", "0sleep", "1", "2", "3", "4", "5", "7", "8", "9"], key="profile_select")
 
     st.markdown("---")
     
@@ -969,8 +977,8 @@ st.markdown("""
 
     /* 3. Убираем лишние отступы, чтобы ползунки стояли плотнее */
     .stSlider {
-        margin-top: 0px;
-        margin-bottom: 10px;
+        margin-top: 5px;
+        margin-bottom: 15px;
     }
     </style>
 """, unsafe_allow_html=True)
