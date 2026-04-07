@@ -967,15 +967,22 @@ for k in domain_keys:
     name = funcs.get(k, {}).get("label", {}).get(lang, k.upper())
     f_names.append(name)
 
-scores = []
 for i, name in enumerate(f_names):
-    # Достаем текущий балл, чтобы подставить нужную метку в название ползунка
-    # Если юзер еще не трогал ползунок — берем 0
+    # 1. Берем текущее значение
     curr_val = st.session_state.get(f"s_{i}_{lang}", 0)
     label = current_labels[curr_val]
     
-    # Рисуем ползунок. В заголовке будет: "1. Внимание (Z: -1.5)"
-    val = st.slider(f"{i+1}. {name} ({label})", 0, 5, key=f"s_{i}_{lang}")
+    # 2. Цветовая кодировка для "захвата мира"
+    # Зеленый для нормы, красный для патологии
+    color = "#808495" # Дефолт (серый)
+    if curr_val >= 4: color = "#FF4B4B" # Грубая патология (красный)
+    elif curr_val >= 2: color = "#FFA500" # Умеренно (оранжевый)
+
+    # 3. Выводим заголовок с цветной меткой через markdown
+    st.markdown(f"**{i+1}. {name}** : <span style='color:{color}; font-size:1.1em;'>{label}</span>", unsafe_allow_html=True)
+    
+    # 4. Сам ползунок БЕЗ подписи (label_visibility="collapsed")
+    val = st.slider(f"s_slider_{i}", 0, 5, key=f"s_{i}_{lang}", label_visibility="collapsed")
     scores.append(val)
 
 # --- ФУНКЦИЯ ДИАЛОГОВОГО ОКНА ---
@@ -1053,13 +1060,13 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
         
         # НОВЫЙ МАППИНГ СЕТЕВЫХ СИНДРОМОВ (Точечная правка)
         net_map = {
-            "vci-svd": {"ru": "ДЭП (Vasc)", "en": "Vascular"}, 
+            "vci-svd": {"ru": "ДЭП", "en": "Vascular"}, 
             "msa": {"ru": "МСА", "en": "MSA"}, 
             "ccas": {"ru": "МКАС", "en": "CCAS"}, 
             "thalam": {"ru": "Таламич.", "en": "Thalamic"}, 
             "retic": {"ru": "Ретикуляр.", "en": "Reticular"}, 
             "striar": {"ru": "Стриарный", "en": "Striatal"}, 
-            "callosal-ds": {"ru": "МПС (Callos)", "en": "Callosal"}
+            "callosal-ds": {"ru": "Межполуш Дисконнект", "en": "Callosal"}
         }
         
         for code, names in net_map.items():
