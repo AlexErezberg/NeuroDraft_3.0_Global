@@ -109,6 +109,7 @@ class NeuroDraftAssistant:
             behav_db = self.lib.get("behavioral_patterns", self.lib.get("behavioral_patterns", {}))
             sr_lib = self.lib.get("suicide_risk", self.lib.get("suicide_risk", {}))
             adj_lib = self.lib.get("phenomenology_adjustments", self.lib.get("phenomenology_adjustments", {}))
+            tags_db = self.lib.get("tags", concl.get("tags", adj_lib.get("tags", {})))
 
             # --- ЛОГИКА КЛЮЧЕЙ (ОСТАВЛЯЕМ ТВОЮ БРОНЕБОЙНУЮ) ---
             t_k = str(raw_typ).strip()
