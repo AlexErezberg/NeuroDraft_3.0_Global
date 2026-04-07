@@ -954,6 +954,22 @@ mapping = {
 }
 current_labels = mapping.get(scale_type, mapping["Luria Raw"])
 
+st.markdown("""
+    <style>
+    /* Скрываем всплывающее значение (tooltip) над ползунком */
+    div[data-testid="stTickBarMin"], 
+    div[data-testid="stTickBarMax"], 
+    div[data-role="tooltip"] {
+        display: none !important;
+    }
+    /* Делаем саму линию ползунка чуть чище */
+    .stSlider [data-baseweb="slider"] {
+        margin-top: 10px;
+        margin-bottom: 20px;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # Логика доменов (твой оригинал)
 domain_keys = [
     "attention", "visual_gnosis", "spatial", "dynamic_praxis", 
