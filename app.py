@@ -845,7 +845,20 @@ with st.sidebar:
     with c2:
         try: st.image("brain2.jpg", width=120)
         except: st.write("🧠")
-            
+
+    # --- ВСТАВКА: ВЫБОР ЯЗЫКА ---
+    st.markdown("---")
+    # Английский по умолчанию (index=0), Русский в конце
+    lang = st.selectbox("🌐 LANGUAGE", ["en", "es", "pt", "ru"], index=0, key="lang_sel")
+    
+    # Сразу тянем переводы заголовков из твоего массива massive-mulilang.json
+    ui = matrix.get("ui_labels", {})
+    status_h = ui.get("status_header", {}).get(lang, "STATUS")
+    results_h = ui.get("results_header", {}).get(lang, "RESULTS")
+    conclusion_h = ui.get("conclusion_header", {}).get(lang, "CONCLUSION")
+    recs_h = ui.get("recs_header", {}).get(lang, "RECOMMENDATIONS")
+    # ----------------------------
+    
     # 2. МИКРО-КНОПКИ В ОДИН РЯД (Сброс и Гайд теперь тут!)
     ui_nav = {
         "ru": {"reset": "♻️ СБРОС", "guide": "📚 ГАЙД"},
@@ -866,19 +879,6 @@ with st.sidebar:
                 st.download_button(ui_nav["guide"], f, "AppGuide.pdf", use_container_width=True)
         except: 
             pass
-
-    # --- ВСТАВКА: ВЫБОР ЯЗЫКА ---
-    st.markdown("---")
-    # Английский по умолчанию (index=0), Русский в конце
-    lang = st.selectbox("🌐 LANGUAGE", ["en", "es", "pt", "ru"], index=0, key="lang_sel")
-    
-    # Сразу тянем переводы заголовков из твоего массива massive-mulilang.json
-    ui = matrix.get("ui_labels", {})
-    status_h = ui.get("status_header", {}).get(lang, "STATUS")
-    results_h = ui.get("results_header", {}).get(lang, "RESULTS")
-    conclusion_h = ui.get("conclusion_header", {}).get(lang, "CONCLUSION")
-    recs_h = ui.get("recs_header", {}).get(lang, "RECOMMENDATIONS")
-    # ----------------------------
     
     # --- 2. ЛОКАЛИЗАЦИЯ ПАСПОРТУХИ (ВСТАВЛЯТЬ СЮДА) ---
     p_header = {"ru": "📋 ПАЦИЕНТ", "en": "📋 PATIENT", "es": "📋 PACIENTE", "pt": "📋 PACIENTE"}.get(lang, "📋 PATIENT")
