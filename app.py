@@ -33,6 +33,7 @@ class NeuroDraftAssistant:
             head, s_raw = code_str.split('/')
             raw_typ = head.rstrip('мж')
             # Дальше твой оригинальный код с отступом 12 пробелов
+        tags = [t.strip() for t in t_in.split(',') if t.strip()]
             
         except Exception as e:
             return f"❌ Ошибка в run: {e}"
@@ -140,27 +141,27 @@ class NeuroDraftAssistant:
             # 3. BEHAVIOR (Поведение) — Строго из корня behav_db
             st_raw.append(behav_db.get(t_k, behav_db.get("0", "")))
 
-            # --- 4. ТЕГИ И НАДСТРОЙКИ (ИСПРАВЛЕНО ТОЛЬКО ДЛЯ ТЕГОВ) ---
+            # --- 4. ТЕГИ И НАДСТРОЙКИ (БРОНЕБОЙНЫЙ ПОИСК) ---
             tags_db = data.get("tags", {})
             
             for t in tags:
-                # Ищем в основной базе или в векторах (nv_db)
+                # Поиск в тегах или векторах
                 t_val = tags_db.get(t) or self.nv_db.get(t)
-                
                 if t_val:
-                    # ТЕГИ: Вскрываем список [{}], так как в массиве они так лежат
+                    # Вскрываем список [{}], если он есть
                     if isinstance(t_val, list) and len(t_val) > 0:
                         target_obj = random.choice(t_val)
                     else:
                         target_obj = t_val
-                    
-                    # Вшиваем в MSE-статус
                     st_raw.append(self.apply_gender(target_obj, gen, is_endo, lang))
 
             for p in presets:
                 # Вшиваем статус напрямую из adj_lib через apply_gender
                 p_status = adj_lib.get(p, {}).get("status", "")
                 if p_status:
+                    # Для пресетов тоже на всякий случай вскрываем список
+                    if isinstance(p_status, list) and len(p_status) > 0:
+                        p_status = random.choice(p_status)
                     st_raw.append(self.apply_gender(p_status, gen, is_endo, lang))
 
             # 5. SUICIDE RISK (Риск в MSE) — Строго из корня sr_lib
