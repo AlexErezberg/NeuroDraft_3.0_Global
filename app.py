@@ -140,27 +140,31 @@ class NeuroDraftAssistant:
             # 3. BEHAVIOR (Поведение) — Строго из корня behav_db
             st_raw.append(behav_db.get(t_k, behav_db.get("0", "")))
 
-            # --- 4. ТЕГИ И НАДСТРОЙКИ (БРОНЕБОЙНЫЙ ПОИСК) ---
-            tags_db = data.get("tags", {})
-            
+            # --- 4. ТЕГИ И НАДСТРОЙКИ (ФИНАЛЬНЫЙ ФИКС УБИЙЦЫ КЕННЕДИ) ---
+            # Ищем базу тегов ГАРАНТИРОВАННО в корне библиотеки
+            t_db = self.lib.get("tags", {})
+            v_db = self.nv_db # Та самая база, из которой паничка работает
+
             for t in tags:
-                # Поиск в тегах или векторах
-                t_val = tags_db.get(t) or self.nv_db.get(t)
+                # Ищем значение: сначала в "tags", если нет — в "vectors"
+                # В Колабе это срабатывало автоматом, тут помогаем вручную
+                t_val = t_db.get(t) or v_db.get(t)
+                
                 if t_val:
-                    # Вскрываем список [{}], если он есть
+                    # Тот самый фикс матрешки [], без которого Стримлит "слепнет"
                     if isinstance(t_val, list) and len(t_val) > 0:
-                        target_obj = random.choice(t_val)
-                    else:
-                        target_obj = t_val
-                    st_raw.append(self.apply_gender(target_obj, gen, is_endo, lang))
+                        t_val = t_val[0]
+                    
+                    st_raw.append(self.apply_gender(t_val, gen, is_endo, lang))
+
+            # Логика ПА (уже не нужна отдельно, но пусть будет для страховки)
+            if "па" in tags or "panic" in tags:
+                st_raw.append(self.apply_gender(self.nv_db.get("panic-history", ""), gen, is_endo, lang))
 
             for p in presets:
                 # Вшиваем статус напрямую из adj_lib через apply_gender
                 p_status = adj_lib.get(p, {}).get("status", "")
                 if p_status:
-                    # Для пресетов тоже на всякий случай вскрываем список
-                    if isinstance(p_status, list) and len(p_status) > 0:
-                        p_status = random.choice(p_status)
                     st_raw.append(self.apply_gender(p_status, gen, is_endo, lang))
 
             # 5. SUICIDE RISK (Риск в MSE) — Строго из корня sr_lib
