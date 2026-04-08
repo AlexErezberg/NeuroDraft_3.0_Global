@@ -1149,7 +1149,7 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
             st.markdown(f'<div style="background:{bg}; color:{tc}; padding:2px; border-radius:3px; margin-bottom:2px; text-align:center; font-size:0.65em; font-weight:bold; border:1px solid #333;">{label}</div>', unsafe_allow_html=True)
 
         # 4. МКФ
-        r_head = "🎯 Rehab Targets:" if lang != 'ru' else "🎯 Мишени рехаб:"
+        r_head = "🎯 Rehab Targets:" if lang != 'ru' else "🎯 Мишени реабилитации:"
         icf_map = {0:"b140", 1:"b156", 2:"b156.4", 3:"b176", 4:"b176", 5:"b176.2", 6:"b172", 7:"b167", 8:"b144", 9:"b164"}
         targets = [i for i, v in enumerate(scores) if v >= 3]
         # Здесь тоже даем больше места для названия домена рядом с кодом
