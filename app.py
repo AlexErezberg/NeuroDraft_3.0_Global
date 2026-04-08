@@ -1099,15 +1099,16 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
         annotations=[dict(x=0.5, y=0.5, text=core_label, showarrow=False, font=dict(size=32, color="#FF4B4B", family="Arial Black"))]
     )
 
-    # --- 4. РАЗМЕТКА: ЭТАЖ 1 (БЛОКИ | ГРАФИК | СЕТИ) ---
-    col_blocks, col_chart, col_nets = st.columns([0.2, 0.6, 0.2])
+    # --- МОНОЛИТНЫЙ ИНСТРУМЕНТАЛЬНЫЙ РЯД (ЕДИНЫЕ КОЛОНКИ) ---
+    col_left, col_center, col_right = st.columns([0.25, 0.5, 0.25])
 
-    with col_blocks:
+    with col_left:
+        # 1. БЛОКИ (Сжато)
         b_head = "🧠 Блоки:" if lang == 'ru' else "🧠 Units:"
-        st.write(f"**{b_head}**")
+        st.markdown(f"<div style='font-size:0.8em; font-weight:bold; margin-bottom:5px;'>{b_head}</div>", unsafe_allow_html=True)
         bn = ["БЛОК I", "БЛОК II", "БЛОК III"] if lang == 'ru' else ["Unit I", "Unit II", "Unit III"]
         
-        # Логика активации (убедись, что b1, b2, b3 определены ранее)
+        # Логика активации
         blks = [
             (bn[0], (scores[0] + scores[6] + (b1 if 'b1' in locals() else 0)) >= 3),
             (bn[1], (scores[1] + scores[2] + scores[5] + (b2 if 'b2' in locals() else 0)) >= 3),
@@ -1116,87 +1117,37 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
         for name, active in blks:
             bg = "#FF4B4B" if active else "#1c1f26"
             tc = "white" if active else "#555"
-            st.markdown(f'<div style="background:{bg}; color:{tc}; padding:8px; border-radius:5px; margin-bottom:5px; text-align:center; font-weight:bold; font-size:0.75em; border:1px solid #333;">{name}</div>', unsafe_allow_html=True)
-
-    with col_chart:
-        # Рисуем твой Plotly-график fig
-        st.plotly_chart(fig, use_container_width=True)
-
-    with col_nets:
-        n_head = "🔎 Сети:" if lang == 'ru' else "🔎 Syndromes:"
-        st.write(f"**{n_head}**")
-        net_map = {
-            "vci-svd": {"ru": "ДЭП", "en": "Vascular"}, "msa": {"ru": "МСА", "en": "MSA"}, 
-            "ccas": {"ru": "МКАС", "en": "CCAS"}, "thalam": {"ru": "Таламич.", "en": "Thalamic"}, 
-            "retic": {"ru": "Ретикуляр.", "en": "Reticular"}, "striar": {"ru": "Стриарный", "en": "Striatal"}, 
-            "callosal-ds": {"ru": "Межполуш Дисконнект", "en": "Callosal"}
-        }
-        for code, names in net_map.items():
-            is_active = any(p.lower() == code.lower() for p in presets)
-            bg = "#FF4B4B" if is_active else "#1c1f26"
-            tc = "white" if is_active else "#444"
-            label = names.get(lang, names["en"])
-            st.markdown(f'<div style="background:{bg}; color:{tc}; padding:4px; border-radius:5px; margin-bottom:4px; text-align:center; font-size:0.65em; font-weight:bold; border:1px solid #333;">{label}</div>', unsafe_allow_html=True)
-
-        # --- 5. РАЗМЕТКА: ЭТАЖ 2 (ТАБЛИЦЫ МЕТРИК И МКФ) ---
-    # Сужаем центральный отступ (0.25 | 0.5 | 0.25), чтобы таблицы были ближе к радару
-    col_metrics, col_spacer, col_rehab = st.columns([0.25, 0.5, 0.25])
-
-    with col_metrics:
-        mapping = {
-            "Luria Raw": ["0", "1", "2", "3", "4", "5"],
-            "Z-Score": ["0.0", "-1.0", "-1.5", "-2.0", "-2.5", "-3.0+"],
-            "T-Score": ["50", "40", "35", "30", "25", "< 20"],
-            "Percentile": ["99%", "84%", "50%", "16%", "2%", "< 1%"],
-            "Qualitative": ["Norm", "Weak", "Mild", "Mod.", "Sev.", "Prof."]
-        }
+            st.markdown(f'<div style="background:{bg}; color:{tc}; padding:4px; border-radius:4px; margin-bottom:3px; text-align:center; font-weight:bold; font-size:0.7em; border:1px solid #333;">{name}</div>', unsafe_allow_html=True)
+        
+        # 2. МЕТРИКИ (Сразу под блоками)
+        mapping = {"Luria Raw":["0","1","2","3","4","5"], "Z-Score":["0.0","-1.0","-1.5","-2.0","-2.5","-3.0+"], "T-Score":["50","40","35","30","25","<20"], "Percentile":["99%","84%","50%","16%","2%","<1%"], "Qualitative":["Norm","Weak","Mild","Mod.","Sev.","Prof."]}
         current_scale = st.session_state.get("scale_sel", "Luria Raw")
         labels = mapping.get(current_scale, mapping["Luria Raw"])
         
-        # Заголовок таблицы
-        m_head = "📊 Метрики:" if lang == 'ru' else "📊 Metrics:"
-        
-        # Сборка строк таблицы для плотности
-        rows = ""
-        for i, name in enumerate(f_names):
-            val = scores[i]
-            dot = "🟢" if val < 2 else "🟡" if val < 4 else "🔴"
-            rows += f"<tr><td style='padding:1px;'>{dot} {name[:10]}.</td><td style='text-align:right; font-weight:bold;'>{labels[val]}</td></tr>"
-        
-        st.markdown(f"""
-            <div style="line-height:1; margin-top:-15px;">
-                <p style="font-size:0.8em; font-weight:bold; margin-bottom:5px;">{m_head}</p>
-                <table style="width:100%; font-size:0.7em; border-collapse:collapse;">{rows}</table>
-            </div>
-        """, unsafe_allow_html=True)
+        m_rows = "".join([f"<tr><td style='padding:1px;'>{'🟢' if scores[i]<2 else '🟡' if scores[i]<4 else '🔴'} {f_names[i][:10]}.</td><td style='text-align:right; font-weight:bold;'>{labels[scores[i]]}</td></tr>" for i in range(10)])
+        st.markdown(f'<table style="width:100%; font-size:0.65em; border-collapse:collapse; margin-top:10px; border-top:1px solid #444;">{m_rows}</table>', unsafe_allow_html=True)
 
-    with col_rehab:
-        # МАППИНГ МКФ-КОДОВ (По доменам 0-9)
-        icf_map = {
-            0: "b140", 1: "b156", 2: "b156.4", 3: "b176", 4: "b176",
-            5: "b176.2", 6: "b172", 7: "b167", 8: "b144", 9: "b164"
-        }
-        r_head = "🎯 Мишени:" if lang == 'ru' else "🎯 Targets:"
+    with col_center:
+        # ЦЕНТРАЛЬНЫЙ РАДАР (Солнце)
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col_right:
+        # 3. СЕТИ (Сжато)
+        n_head = "🔎 Сети:" if lang == 'ru' else "🔎 Syndromes:"
+        st.markdown(f"<div style='font-size:0.8em; font-weight:bold; margin-bottom:5px;'>{n_head}</div>", unsafe_allow_html=True)
+        net_map = {"vci-svd": "Vasc", "msa": "MSA", "ccas": "CCAS", "thalam": "Thal", "retic": "Ret", "striar": "Str", "callosal-ds": "Call"}
         
-        r_rows = ""
-        # Выбираем только патологию (балл >= 3)
+        for code, label in net_map.items():
+            is_active = any(p.lower() == code.lower() for p in presets)
+            bg = "#FF4B4B" if is_active else "#1c1f26"
+            tc = "white" if is_active else "#444"
+            st.markdown(f'<div style="background:{bg}; color:{tc}; padding:2px; border-radius:3px; margin-bottom:2px; text-align:center; font-size:0.65em; font-weight:bold; border:1px solid #333;">{label}</div>', unsafe_allow_html=True)
+        
+        # 4. МКФ (Сразу под сетями)
+        icf_map = {0:"b140", 1:"b156", 2:"b156.4", 3:"b176", 4:"b176", 5:"b176.2", 6:"b172", 7:"b167", 8:"b144", 9:"b164"}
         targets = [i for i, v in enumerate(scores) if v >= 3]
-        
-        if targets:
-            for i in targets:
-                code = icf_map.get(i, "b1")
-                d_name = f_names[i][:10]
-                r_rows += f"<tr><td style='padding:1px; color:#FF4B4B; font-weight:bold;'>{code}</td><td style='text-align:right; font-style:italic;'>{d_name}.</td></tr>"
-        else:
-            msg = "Норма" if lang == 'ru' else "Normal"
-            r_rows = f"<tr><td colspan='2' style='text-align:center; color:#555; padding-top:10px;'>{msg}</td></tr>"
-
-        st.markdown(f"""
-            <div style="line-height:1; margin-top:-15px;">
-                <p style="font-size:0.8em; font-weight:bold; margin-bottom:5px;">{r_head}</p>
-                <table style="width:100%; font-size:0.7em; border-collapse:collapse;">{r_rows}</table>
-            </div>
-        """, unsafe_allow_html=True)
+        r_rows = "".join([f"<tr><td style='padding:1px; color:#FF4B4B; font-weight:bold;'>{icf_map[i]}</td><td style='text-align:right; font-style:italic;'>{f_names[i][:8]}.</td></tr>" for i in targets]) if targets else "<tr><td colspan='2' style='text-align:center; color:#555;'>Normal</td></tr>"
+        st.markdown(f'<table style="width:100%; font-size:0.65em; border-collapse:collapse; margin-top:10px; border-top:1px solid #444;">{r_rows}</table>', unsafe_allow_html=True)
 
     st.markdown("---")
         
