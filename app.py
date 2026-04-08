@@ -1187,7 +1187,7 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
         "en": {"area": "Clinical Report:", "word": "📥 WORD", "copy": "📋 COPY", "exit": "❌ EXIT", "file": "PROTOCOL"},
         "es": {"area": "Informe Clínico:", "word": "📥 WORD", "copy": "📋 COPIAR", "exit": "❌ SALIR", "file": "PROTOCOLO"},
         "pt": {"area": "Relatório Clínico:", "word": "📥 WORD", "copy": "📋 COPIAR", "exit": "❌ SAIR", "file": "PROTOCOLO"}
-    }.get(lang, ui_diag["en"])
+    }.get(lang, {"area": "Clinical Report:", "word": "📥 WORD", "copy": "📋 COPY", "exit": "❌ EXIT", "file": "PROTOCOL"})
 
     st.text_area(ui_diag["area"], report_text, height=300)
     
