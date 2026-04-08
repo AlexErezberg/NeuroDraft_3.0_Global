@@ -1099,20 +1099,15 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
         annotations=[dict(x=0.5, y=0.5, text=core_label, showarrow=False, font=dict(size=32, color="#FF4B4B", family="Arial Black"))]
     )
 
-# --- 4. РАЗМЕТКА: БЛОКИ (0.2) | ГРАФИК (0.6) | СЕТИ (0.2) ---
+    # --- 4. РАЗМЕТКА: ЭТАЖ 1 (БЛОКИ | ГРАФИК | СЕТИ) ---
     col_blocks, col_chart, col_nets = st.columns([0.2, 0.6, 0.2])
 
     with col_blocks:
-        # Перевод заголовка
         b_head = "🧠 Блоки:" if lang == 'ru' else "🧠 Units:"
         st.write(f"**{b_head}**")
+        bn = ["БЛОК I", "БЛОК II", "БЛОК III"] if lang == 'ru' else ["Unit I", "Unit II", "Unit III"]
         
-        # Перевод названий блоков
-        if lang == 'ru':
-            bn = ["БЛОК I", "БЛОК II", "БЛОК III"]
-        else:
-            bn = ["Unit I (Arousal)", "Unit II (Processing)", "Unit III (Control)"]
-
+        # Твоя логика активации блоков (b1, b2, b3 должны быть определены выше)
         blks = [
             (bn[0], scores[0] + scores[6] + b1 >= 3),
             (bn[1], scores[1] + scores[2] + scores[5] + b2 >= 3),
@@ -1124,33 +1119,52 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
             st.markdown(f'<div style="background:{bg}; color:{tc}; padding:8px; border-radius:5px; margin-bottom:5px; text-align:center; font-weight:bold; font-size:0.75em; border:1px solid #333;">{name}</div>', unsafe_allow_html=True)
 
     with col_chart:
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True) # Твой график fig
 
     with col_nets:
-        # Перевод заголовка
         n_head = "🔎 Сети:" if lang == 'ru' else "🔎 Syndromes:"
         st.write(f"**{n_head}**")
-        
-        # НОВЫЙ МАППИНГ СЕТЕВЫХ СИНДРОМОВ (Точечная правка)
         net_map = {
-            "vci-svd": {"ru": "ДЭП", "en": "Vascular"}, 
-            "msa": {"ru": "МСА", "en": "MSA"}, 
-            "ccas": {"ru": "МКАС", "en": "CCAS"}, 
-            "thalam": {"ru": "Таламич.", "en": "Thalamic"}, 
-            "retic": {"ru": "Ретикуляр.", "en": "Reticular"}, 
-            "striar": {"ru": "Стриарный", "en": "Striatal"}, 
+            "vci-svd": {"ru": "ДЭП", "en": "Vascular"}, "msa": {"ru": "МСА", "en": "MSA"}, 
+            "ccas": {"ru": "МКАС", "en": "CCAS"}, "thalam": {"ru": "Таламич.", "en": "Thalamic"}, 
+            "retic": {"ru": "Ретикуляр.", "en": "Reticular"}, "striar": {"ru": "Стриарный", "en": "Striatal"}, 
             "callosal-ds": {"ru": "Межполуш Дисконнект", "en": "Callosal"}
         }
-        
         for code, names in net_map.items():
-            # Проверяем наличие ключа в пресетах (строго по твоим латинским ключам)
             is_active = any(p.lower() == code.lower() for p in presets)
             bg = "#FF4B4B" if is_active else "#1c1f26"
             tc = "white" if is_active else "#444"
-            
-            # Выбираем, что написать на плашке
             label = names.get(lang, names["en"])
-            
+            st.markdown(f'<div style="background:{bg}; color:{tc}; padding:4px; border-radius:5px; margin-bottom:4px; text-align:center; font-size:0.65em; font-weight:bold; border:1px solid #333;">{label}</div>', unsafe_allow_html=True)
+
+    # --- 5. РАЗМЕТКА: ЭТАЖ 2 (МЕТРИКИ | ПУСТО | МКФ) ---
+    col_metrics, col_spacer, col_rehab = st.columns([0.2, 0.6, 0.2])
+
+    with col_metrics:
+        # ЛОГИКА ТАБЛИЦЫ МЕТРИК
+        mapping = {
+            "Luria Raw": ["0", "1", "2", "3", "4", "5"],
+            "Z-Score": ["0.0", "-1.0", "-1.5", "-2.0", "-2.5", "-3.0+"],
+            "T-Score": ["50", "40", "35", "30", "25", "< 20"],
+            "Percentile": ["99%", "84%", "50%", "16%", "2%", "< 1%"],
+            "Qualitative": ["Norm", "Weak", "Mild", "Mod.", "Sev.", "Prof."]
+        }
+        current_scale = st.session_state.get("scale_sel", "Luria Raw")
+        labels = mapping.get(current_scale, mapping["Luria Raw"])
+        
+        m_head = "📊 Метрики:" if lang == 'ru' else "📊 Metrics:"
+        st.write(f"**{m_head}**")
+        
+        for i, name in enumerate(f_names):
+            val = scores[i]
+            dot = "🟢" if val < 2 else "🟡" if val < 4 else "🔴"
+            st.markdown(f"<div style='font-size:0.7em; margin-bottom:2px;'>{dot} {name[:10]}.: <b>{labels[val]}</b></div>", unsafe_allow_html=True)
+
+    with col_rehab:
+        r_head = "🎯 Мишени:" if lang == 'ru' else "🎯 Targets:"
+        st.write(f"**{r_head}**")
+        # Тут в следующем шаге выведем МКФ-коды для доменов с баллом >= 3
+        st.caption("ICF Codes...")
             st.markdown(f'<div style="background:{bg}; color:{tc}; padding:4px; border-radius:5px; margin-bottom:4px; text-align:center; font-size:0.65em; font-weight:bold; border:1px solid #333;">{label}</div>', unsafe_allow_html=True)
 
         st.markdown("---")
