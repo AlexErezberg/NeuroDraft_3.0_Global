@@ -1152,7 +1152,15 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
         # 3. СЕТИ
         n_head = "🔎 Networks Dist.:" if lang != 'ru' else "🔎 Сетевые нар.:"
         st.markdown(f"<div style='font-size:0.75em; font-weight:bold; margin-bottom:4px;'>{n_head}</div>", unsafe_allow_html=True)
-        net_map = {"vci-svd": "Vasc", "msa": "MSA", "ccas": "CCAS", "thalam": "Thal", "retic": "Ret", "striar": "Str", "callosal-ds": "Call"}
+        net_map = {
+            "vci-svd": {"ru": "ДЭП", "en": "Vascular"}, 
+            "msa": {"ru": "МСА", "en": "MSA"}, 
+            "ccas": {"ru": "МКАС", "en": "CCAS"}, 
+            "thalam": {"ru": "Таламич.", "en": "Thalamic"}, 
+            "retic": {"ru": "Ретикуляр.", "en": "Reticular"}, 
+            "striar": {"ru": "Стриарный", "en": "Striatal"}, 
+            "callosal-ds": {"ru": "Межполуш Дисконнект", "en": "Callosal"}
+        }
         for code, label in net_map.items():
             is_active = any(p.lower() == code.lower() for p in presets)
             bg = "#FF4B4B" if is_active else "#1c1f26"
