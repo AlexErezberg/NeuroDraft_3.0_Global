@@ -1187,17 +1187,57 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
         "en": {"area": "Clinical Report:", "word": "📥 WORD", "copy": "📋 COPY", "exit": "❌ EXIT", "file": "PROTOCOL"},
         "es": {"area": "Informe Clínico:", "word": "📥 WORD", "copy": "📋 COPIAR", "exit": "❌ SALIR", "file": "PROTOCOLO"},
         "pt": {"area": "Relatório Clínico:", "word": "📥 WORD", "copy": "📋 COPIAR", "exit": "❌ SAIR", "file": "PROTOCOLO"}
-    }.get(lang, "en")
+    }.get(lang, ui_diag["en"])
 
     st.text_area(ui_diag["area"], report_text, height=300)
     
     c1, c2, c3 = st.columns(3)
     with c1:
+        # --- БОСТОНСКИЙ ЭКСПОРТ ---
+        from docx import Document
+        from docx.shared import Pt
+        import re, io
+
         doc = Document()
-        # Внутри файла тоже пишем локализованный заголовок
-        doc.add_paragraph(f"{ui_diag['file']}: {fio_name}\n\n{report_text}")
-        bio = io.BytesIO(); doc.save(bio)
+        
+        # Настройка шрифта Helvetica 10pt (или Arial 11pt)
+        style = doc.styles['Normal']
+        font = style.font
+        font.name = 'Helvetica'
+        font.size = Pt(10)
+
+        # Локализованный заголовок внутри файла (Жирным)
+        header = doc.add_paragraph()
+        header.add_run(f"{ui_diag['file']}: {fio_name}").bold = True
+        
+        # Список терминов для выделения жирным
+        bold_triggers = [
+            "MoCA:", "MMSE:", "GDS:", "ICF:", "CLASSIFICATION:", "STRATEGY:", "ROADMAP:",
+            "Unit I", "Unit II", "Unit III", "БЛОК I", "БЛОК II", "БЛОК III", "Luria",
+            "severe", "moderate", "mild", "preserved", " impairment", 
+            "выраженное", "умеренное", "легкое", "сохранность", "дефицит", "dysfunction"
+        ]
+
+        # Наполнение текстом с обработкой жирного шрифта
+        paragraphs = report_text.split('\n')
+        for para_text in paragraphs:
+            if not para_text.strip():
+                doc.add_paragraph("") # Пустая строка между абзацами (стандарт Mayo)
+                continue
+            
+            p = doc.add_paragraph()
+            words = para_text.split(' ')
+            for word in words:
+                run = p.add_run(word + " ")
+                clean_word = re.sub(r'[^\w\.]', '', word).lower()
+                # Болдим триггеры и коды МКФ (начинаются на b, d, e)
+                if any(t.lower() in word.lower() for t in bold_triggers) or re.match(r"^[bde]\d{2,4}", clean_word):
+                    run.bold = True
+
+        bio = io.BytesIO()
+        doc.save(bio)
         st.download_button(ui_diag["word"], bio.getvalue(), f"{fio_name}.docx", use_container_width=True)
+
     with c2:
         if st.button(ui_diag["copy"], use_container_width=True):
             st.code(report_text, language=None)
