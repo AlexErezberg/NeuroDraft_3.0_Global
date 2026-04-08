@@ -1226,17 +1226,36 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
             row[0].text = name
             row[1].text = str(labels_map[scores[i]])
 
-        # 3. ГРАФИК РАДАРА (Белый фон)
+        # --- 4. ВСТАВКА РАДАРА (ВЫСОКИЙ КОНТРАСТ ДЛЯ ПЕЧАТИ) ---
         try:
-            # На лету меняем тему на белую для экспорта
-            fig_export = fig # Берем глобальную fig из диалога
-            fig_export.update_layout(template="plotly_white", paper_bgcolor='white', plot_bgcolor='white')
-            img_bytes = pio.to_image(fig_export, format="png", width=800, height=600)
-            doc.add_picture(io.BytesIO(img_bytes), width=Inches(5))
-            # Возвращаем тему назад для интерфейса (опционально)
-            fig_export.update_layout(template="plotly_dark")
+            # На лету накручиваем яркость и толщину линий
+            fig.update_layout(
+                template="plotly_white", 
+                paper_bgcolor='white', 
+                plot_bgcolor='white',
+                # Увеличиваем шрифт осей
+                font=dict(color="black", size=16, family="Helvetica"),
+                # Убираем лишние отступы вокруг
+                margin=dict(l=20, r=20, t=20, b=20)
+            )
+            
+            # Делаем саму линию (контур) жирной и ярко-красной
+            fig.update_traces(
+                line=dict(width=4, color="#FF0000"), # Ярко-красный контур
+                fillcolor="rgba(255, 0, 0, 0.4)",      # Плотная заливка
+                marker=dict(size=10, color="#FF0000") # Крупные точки
+            )
+
+            # Генерим PNG с высоким разрешением (scale=3)
+            img_bytes = pio.to_image(fig, format="png", width=800, height=600, scale=3)
+            doc.add_picture(io.BytesIO(img_bytes), width=Inches(4.8))
+            
+            # ВОЗВРАЩАЕМ КИБЕРПАНК ДЛЯ ЭКРАНА (чтобы не испортить UI)
+            fig.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+            fig.update_traces(line=dict(width=2, color="#FF4B4B"), fillcolor="rgba(255, 75, 75, 0.3)")
+            
         except Exception as e:
-            doc.add_paragraph(f"[Chart Error: {e}]")
+            doc.add_paragraph(f"\n[Visual Profile Error: {e}]\n")
 
         # 4. ТАБЛИЦА МКФ (ICF Targets)
         doc.add_heading('Rehab Targets (ICF)', level=2)
