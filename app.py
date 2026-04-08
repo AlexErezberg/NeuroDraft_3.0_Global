@@ -1103,19 +1103,30 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
     col_left, col_center, col_right = st.columns([0.25, 0.5, 0.25])
 
     with col_left:
-        # 1. БЛОКИ (Сжато)
+        # 1. БЛОКИ (Heatmap Edition)
         b_head = "🧠 Units:" if lang != 'ru' else "🧠 Блоки:"
         st.markdown(f"<div style='font-size:0.75em; font-weight:bold; margin-bottom:4px;'>{b_head}</div>", unsafe_allow_html=True)
         bn = ["БЛОК I", "БЛОК II", "БЛОК III"] if lang == 'ru' else ["Unit I", "Unit II", "Unit III"]
         
-        # Логика активации
-        blks = [
-            (bn[0], (scores[0] + scores[6] + (b1 if 'b1' in locals() else 0)) >= 3),
-            (bn[1], (scores[1] + scores[2] + scores[5] + (b2 if 'b2' in locals() else 0)) >= 3),
-            (bn[2], (scores[3] + scores[9] + (b3 if 'b3' in locals() else 0)) >= 3)
-        ]
-        for name, active in blks:
-            bg = "#FF4B4B" if active else "#1c1f26"
+        # Считаем сырой вес (сумму баллов) для каждого блока
+        w1 = scores[0] + scores[6] + (b1 if 'b1' in locals() else 0)
+        w2 = scores[1] + scores[2] + scores[5] + (b2 if 'b2' in locals() else 0)
+        w3 = scores[3] + scores[9] + (b3 if 'b3' in locals() else 0)
+        weights = [w1, w2, w3]
+        max_w = max(weights) if max(weights) > 0 else 1
+
+        # Формируем список: имя, активность (>=3), и интенсивность цвета (0.0 - 1.0)
+        blks = []
+        for i, weight in enumerate(weights):
+            is_active = weight >= 3
+            # Интенсивность: 1.0 для самого тяжелого, меньше для остальных (минимум 0.4 для активных)
+            intensity = max(0.4, weight / max_w) if is_active else 0
+            blks.append((bn[i], is_active, intensity))
+
+        for name, active, alpha in blks:
+            # Если блок активен, считаем цвет: от тускло-красного до ярко-алого
+            # Используем rgba для управления насыщенностью
+            bg = f"rgba(255, 75, 75, {alpha})" if active else "#1c1f26"
             tc = "white" if active else "#555"
             st.markdown(f'<div style="background:{bg}; color:{tc}; padding:4px; border-radius:4px; margin-bottom:3px; text-align:center; font-weight:bold; font-size:0.7em; border:1px solid #333;">{name}</div>', unsafe_allow_html=True)
         
