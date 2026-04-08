@@ -1138,8 +1138,9 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
             label = names.get(lang, names["en"])
             st.markdown(f'<div style="background:{bg}; color:{tc}; padding:4px; border-radius:5px; margin-bottom:4px; text-align:center; font-size:0.65em; font-weight:bold; border:1px solid #333;">{label}</div>', unsafe_allow_html=True)
 
-    # --- 5. РАЗМЕТКА: ЭТАЖ 2 (МЕТРИКИ | ПУСТО | МКФ) ---
-    col_metrics, col_spacer, col_rehab = st.columns([0.2, 0.6, 0.2])
+        # --- 5. РАЗМЕТКА: ЭТАЖ 2 (ТАБЛИЦЫ МЕТРИК И МКФ) ---
+    # Сужаем центральный отступ (0.25 | 0.5 | 0.25), чтобы таблицы были ближе к радару
+    col_metrics, col_spacer, col_rehab = st.columns([0.25, 0.5, 0.25])
 
     with col_metrics:
         mapping = {
@@ -1151,18 +1152,51 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
         }
         current_scale = st.session_state.get("scale_sel", "Luria Raw")
         labels = mapping.get(current_scale, mapping["Luria Raw"])
+        
+        # Заголовок таблицы
         m_head = "📊 Метрики:" if lang == 'ru' else "📊 Metrics:"
-        st.write(f"**{m_head}**")
+        
+        # Сборка строк таблицы для плотности
+        rows = ""
         for i, name in enumerate(f_names):
             val = scores[i]
             dot = "🟢" if val < 2 else "🟡" if val < 4 else "🔴"
-            st.markdown(f"<div style='font-size:0.65em; margin-bottom:1px;'>{dot} {name[:10]}.: <b>{labels[val]}</b></div>", unsafe_allow_html=True)
+            rows += f"<tr><td style='padding:1px;'>{dot} {name[:10]}.</td><td style='text-align:right; font-weight:bold;'>{labels[val]}</td></tr>"
+        
+        st.markdown(f"""
+            <div style="line-height:1; margin-top:-15px;">
+                <p style="font-size:0.8em; font-weight:bold; margin-bottom:5px;">{m_head}</p>
+                <table style="width:100%; font-size:0.7em; border-collapse:collapse;">{rows}</table>
+            </div>
+        """, unsafe_allow_html=True)
 
     with col_rehab:
+        # МАППИНГ МКФ-КОДОВ (По доменам 0-9)
+        icf_map = {
+            0: "b140", 1: "b156", 2: "b156.4", 3: "b176", 4: "b176",
+            5: "b176.2", 6: "b172", 7: "b167", 8: "b144", 9: "b164"
+        }
         r_head = "🎯 Мишени:" if lang == 'ru' else "🎯 Targets:"
-        st.write(f"**{r_head}**")
-        # Здесь в следующем шаге прикрутим МКФ-коды
-        st.caption("ICF Codes...")
+        
+        r_rows = ""
+        # Выбираем только патологию (балл >= 3)
+        targets = [i for i, v in enumerate(scores) if v >= 3]
+        
+        if targets:
+            for i in targets:
+                code = icf_map.get(i, "b1")
+                d_name = f_names[i][:10]
+                r_rows += f"<tr><td style='padding:1px; color:#FF4B4B; font-weight:bold;'>{code}</td><td style='text-align:right; font-style:italic;'>{d_name}.</td></tr>"
+        else:
+            msg = "Норма" if lang == 'ru' else "Normal"
+            r_rows = f"<tr><td colspan='2' style='text-align:center; color:#555; padding-top:10px;'>{msg}</td></tr>"
+
+        st.markdown(f"""
+            <div style="line-height:1; margin-top:-15px;">
+                <p style="font-size:0.8em; font-weight:bold; margin-bottom:5px;">{r_head}</p>
+                <table style="width:100%; font-size:0.7em; border-collapse:collapse;">{r_rows}</table>
+            </div>
+        """, unsafe_allow_html=True)
 
     st.markdown("---")
         
