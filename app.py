@@ -1138,21 +1138,22 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
         st.plotly_chart(fig, use_container_width=True)
 
     with col_right:
-        # ... (твой код 3. СЕТИ остается без изменений) ...
-        # ...
-        
-        # 4. МКФ (С КРАСИВЫМ ЗАГОЛОВКОМ)
+        # 3. СЕТИ (ВОЗВРАЩЕНО)
+        n_head = "🔎 Networks Dist.:" if lang != 'ru' else "🔎 Сетевые нар.:"
+        st.markdown(f"<div style='font-size:0.75em; font-weight:bold; margin-bottom:4px;'>{n_head}</div>", unsafe_allow_html=True)
+        net_map = {"vci-svd": "Vasc", "msa": "MSA", "ccas": "CCAS", "thalam": "Thal", "retic": "Ret", "striar": "Str", "callosal-ds": "Call"}
+        for code, label in net_map.items():
+            is_active = any(p.lower() == code.lower() for p in presets)
+            bg = "#FF4B4B" if is_active else "#1c1f26"
+            tc = "white" if is_active else "#444"
+            st.markdown(f'<div style="background:{bg}; color:{tc}; padding:2px; border-radius:3px; margin-bottom:2px; text-align:center; font-size:0.65em; font-weight:bold; border:1px solid #333;">{label}</div>', unsafe_allow_html=True)
+
+        # 4. МКФ
         r_head = "🎯 Rehab Targets:" if lang != 'ru' else "🎯 Мишени коррекции:"
         icf_map = {0:"b140", 1:"b156", 2:"b156.4", 3:"b176", 4:"b176", 5:"b176.2", 6:"b172", 7:"b167", 8:"b144", 9:"b164"}
         targets = [i for i, v in enumerate(scores) if v >= 3]
-        r_rows = "".join([f"<tr><td style='padding:1px; color:#FF4B4B; font-weight:bold;'>{icf_map[i]}</td><td style='text-align:right; font-style:italic;'>{f_names[i][:8]}.</td></tr>" for i in targets]) if targets else "<tr><td colspan='2' style='text-align:center; color:#555;'>Normal</td></tr>"
-        
-        st.markdown(f"""
-            <div style='margin-top:10px; border-top:1px solid #444; padding-top:5px;'>
-                <div style='font-size:0.7em; font-weight:bold; margin-bottom:3px;'>{r_head}</div>
-                <table style="width:100%; font-size:0.65em; border-collapse:collapse;">{r_rows}</table>
-            </div>
-        """, unsafe_allow_html=True)
+        r_rows = "".join([f"<tr><td style='padding:1px; color:#FF4B4B; font-weight:bold;'>{icf_map[i]}</td><td style='text-align:right; font-style:italic;'>{f_names[i][:8]}.</td></tr>" for i in targets]) if targets else f"<tr><td colspan='2' style='text-align:center; color:#555;'>{'Normal' if lang!='ru' else 'Норма'}</td></tr>"
+        st.markdown(f"<div style='margin-top:10px; border-top:1px solid #444; padding-top:5px;'><div style='font-size:0.7em; font-weight:bold; margin-bottom:3px;'>{r_head}</div><table style='width:100%; font-size:0.65em; border-collapse:collapse;'>{r_rows}</table></div>", unsafe_allow_html=True)
 
     st.markdown("---")
         
