@@ -219,23 +219,22 @@ class NeuroDraftAssistant:
 
             # 1. ОБНОВЛЕННЫЙ СЛОВАРЬ ШАБЛОНОВ (RU/EN/ES/PT)
             scr_tpl = {
-                "ru": "Результаты скрининга (MoCA: {m}, MMSE: {mm}, GDS: {g}) подтверждают {s} когнитивное снижение{d}.",
-                "en": "Screening results (MoCA: {m}, MMSE: {mm}, GDS: {g}) corroborate {s} cognitive impairment{d}.",
-                "es": "Los resultados del screening (MoCA: {m}, MMSE: {mm}, GDS: {g}) confirman un deterioro cognitivo {s}{d}.",
-                "pt": "Os resultados do rastreio (MoCA: {m}, MMSE: {mm}, GDS: {g}) confirmam um compromisso cognitivo {s}{d}."
+                "ru": "Результаты скрининга (MoCA: {m}, MMSE: {mm}, GDS: {g}) указывают на {s}{d}.",
+                "en": "Screening results (MoCA: {m}, MMSE: {mm}, GDS: {g}) indicate {s}{d}.",
+                "es": "Los resultados del screening (MoCA: {m}, MMSE: {mm}, GDS: {g}) indican {s}{d}.",
+                "pt": "Os resultados do rastreio (MoCA: {m}, MMSE: {mm}, GDS: {g}) indicam {s}{d}."
             }
 
-            # 2. СТЕПЕНИ ТЯЖЕСТИ
+            # 2. СТЕПЕНИ ТЯЖЕСТИ (ТЕПЕРЬ С ФРАЗОЙ ЦЕЛИКОМ)
             sev_map = {
-                "severe":   {"ru": "выраженное", "en": "severe",   "es": "grave",    "pt": "grave"},
-                "moderate": {"ru": "умеренное",  "en": "moderate", "es": "moderado", "pt": "moderado"},
-                "mild":     {"ru": "легкое",     "en": "mild",     "es": "leve",     "pt": "leve"}
+                "severe":   {"ru": "выраженное когнитивное снижение", "en": "severe cognitive impairment", "es": "un deterioro cognitivo grave", "pt": "um compromisso cognitivo grave"},
+                "moderate": {"ru": "умеренное когнитивное снижение",  "en": "moderate cognitive impairment", "es": "un deterioro cognitivo moderado", "pt": "um compromisso cognitivo moderado"},
+                "mild":     {"ru": "легкое когнитивное снижение",     "en": "mild cognitive impairment", "es": "un deterioro cognitivo leve", "pt": "um compromisso cognitivo leve"},
+                "normal":   {"ru": "сохранность когнитивных функций", "en": "preserved cognitive functions", "es": "la preservación de las funciones cognitivas", "pt": "a preservação das funções cognitivas"}
             }
 
-            # 3. ЛОГИКА ОПРЕДЕЛЕНИЯ И ВЫВОДА (ИСПРАВЛЕНО ПОД ЧИСЛА)
-            # Проверяем наличие баллов (учитываем, что 0 - это тоже балл)
+            # 3. ЛОГИКА ОПРЕДЕЛЕНИЯ И ВЫВОДА
             if moca is not None or mmse is not None or gds is not None:
-                # Безопасно переводим в число, если прилетела строка, или берем как есть
                 def to_int(v, default):
                     try: return int(v)
                     except: return default
@@ -243,24 +242,20 @@ class NeuroDraftAssistant:
                 m_val = to_int(moca, 30)
                 g_val = to_int(gds, 0)
 
-                # Оценка когнитивной тяжести
                 if m_val < 11: s_key = "severe"
                 elif m_val < 19: s_key = "moderate"
                 elif m_val < 26: s_key = "mild"
-                else: s_key = "normal" # Добавим ключ для нормы, если его нет
+                else: s_key = "normal"
 
-                # Оценка депрессии (GDS)
                 dep_add = ""
                 if g_val > 9:
-                    dep_add = {"ru": " и тяжелую депрессию", "en": " and severe depression"}.get(lang, "")
+                    dep_add = {"ru": " и тяжелую депрессию", "en": " and severe depression", "es": " y una depresión grave", "pt": " e uma depressão grave"}.get(lang, "")
                 elif g_val > 4:
-                    dep_add = {"ru": " и легкую депрессию", "en": " and mild depression"}.get(lang, "")
+                    dep_add = {"ru": " и легкую депрессию", "en": " and mild depression", "es": " y una depresión leve", "pt": " e uma depressão leve"}.get(lang, "")
 
-                # Если в sev_map нет "normal", подставим "нормальное состояние" или пропустим
-                s_word = sev_map.get(s_key, {"ru": "сохранное"}).get(lang, "normal")
+                s_word = sev_map.get(s_key, sev_map["normal"]).get(lang, sev_map[s_key]["en"])
                 tpl = scr_tpl.get(lang, scr_tpl["en"])
 
-                # ВАЖНО: Вставляем в НАЧАЛО списка final, чтобы это было первой строкой Заключения
                 final.insert(0, tpl.format(
                     m=moca if moca is not None else "—",
                     mm=mmse if mmse is not None else "—",
