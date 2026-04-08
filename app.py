@@ -1193,47 +1193,76 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
     
     c1, c2, c3 = st.columns(3)
     with c1:
-        # --- БОСТОНСКИЙ ЭКСПОРТ ---
         from docx import Document
-        from docx.shared import Pt
-        import re, io
+        from docx.shared import Pt, Inches
+        import re, io, plotly.io as pio
 
         doc = Document()
         
-        # Настройка шрифта Helvetica 10pt (или Arial 11pt)
+        # ШРИФТ (Helvetica 10pt)
         style = doc.styles['Normal']
         font = style.font
         font.name = 'Helvetica'
         font.size = Pt(10)
 
-        # Локализованный заголовок внутри файла (Жирным)
+        # 1. ЗАГОЛОВОК И ПАСПОРТ
         header = doc.add_paragraph()
         header.add_run(f"{ui_diag['file']}: {fio_name}").bold = True
-        
-        # Список терминов для выделения жирным
-        bold_triggers = [
-            "MoCA:", "MMSE:", "GDS:", "ICF:", "CLASSIFICATION:", "STRATEGY:", "ROADMAP:",
-            "Unit I", "Unit II", "Unit III", "БЛОК I", "БЛОК II", "БЛОК III", "Luria",
-            "severe", "moderate", "mild", "preserved", " impairment", 
-            "выраженное", "умеренное", "легкое", "сохранность", "дефицит", "dysfunction"
-        ]
+        doc.add_paragraph(f"Type: {p_type} | Date: {datetime.now().strftime('%d.%m.%Y')}")
 
-        # Наполнение текстом с обработкой жирного шрифта
-        paragraphs = report_text.split('\n')
-        for para_text in paragraphs:
-            if not para_text.strip():
-                doc.add_paragraph("") # Пустая строка между абзацами (стандарт Mayo)
-                continue
-            
+        # 2. ТАБЛИЦА МЕТРИК (Слева)
+        doc.add_heading('Clinical Metrics', level=2)
+        mapping = {"Luria Raw":["0","1","2","3","4","5"], "Z-Score":["0.0","-1.0","-1.5","-2.0","-2.5","-3.0+"], "T-Score":["50","40","35","30","25","<20"], "Percentile":["99%","84%","50%","16%","2%","<1%"], "Qualitative":["Norm","Weak","Mild","Mod.","Sev.","Prof."]}
+        current_scale = st.session_state.get("scale_sel", "Luria Raw")
+        labels_map = mapping.get(current_scale, mapping["Luria Raw"])
+
+        m_table = doc.add_table(rows=1, cols=2)
+        m_table.style = 'Table Grid'
+        for i, name in enumerate(f_names):
+            row = m_table.add_row().cells
+            row[0].text = name
+            row[1].text = str(labels_map[scores[i]])
+
+        # 3. ГРАФИК РАДАРА (Белый фон)
+        try:
+            # На лету меняем тему на белую для экспорта
+            fig_export = fig # Берем глобальную fig из диалога
+            fig_export.update_layout(template="plotly_white", paper_bgcolor='white', plot_bgcolor='white')
+            img_bytes = pio.to_image(fig_export, format="png", width=800, height=600)
+            doc.add_picture(io.BytesIO(img_bytes), width=Inches(5))
+            # Возвращаем тему назад для интерфейса (опционально)
+            fig_export.update_layout(template="plotly_dark")
+        except Exception as e:
+            doc.add_paragraph(f"[Chart Error: {e}]")
+
+        # 4. ТАБЛИЦА МКФ (ICF Targets)
+        doc.add_heading('Rehab Targets (ICF)', level=2)
+        icf_map = {0:"b140", 1:"b156", 2:"b156.4", 3:"b176", 4:"b176", 5:"b176.2", 6:"b172", 7:"b167", 8:"b144", 9:"b164"}
+        targets = [i for i, v in enumerate(scores) if v >= 3]
+        if targets:
+            r_table = doc.add_table(rows=1, cols=2)
+            r_table.style = 'Table Grid'
+            for i in targets:
+                row = r_table.add_row().cells
+                row[0].text = icf_map[i]
+                row[1].text = f_names[i]
+        else:
+            doc.add_paragraph("No significant targets identified.")
+
+        # 5. ТЕКСТ ЗАКЛЮЧЕНИЯ (Болдинг)
+        doc.add_heading('Interpretation', level=2)
+        bold_triggers = ["MoCA:", "MMSE:", "GDS:", "ICF:", "Unit", "БЛОК", "severe", "moderate", "mild", "preserved", " impairment"]
+        
+        for para_text in report_text.split('\n'):
+            if not para_text.strip(): continue
             p = doc.add_paragraph()
-            words = para_text.split(' ')
-            for word in words:
+            for word in para_text.split(' '):
                 run = p.add_run(word + " ")
                 clean_word = re.sub(r'[^\w\.]', '', word).lower()
-                # Болдим триггеры и коды МКФ (начинаются на b, d, e)
                 if any(t.lower() in word.lower() for t in bold_triggers) or re.match(r"^[bde]\d{2,4}", clean_word):
                     run.bold = True
 
+        # СОХРАНЕНИЕ
         bio = io.BytesIO()
         doc.save(bio)
         st.download_button(ui_diag["word"], bio.getvalue(), f"{fio_name}.docx", use_container_width=True)
