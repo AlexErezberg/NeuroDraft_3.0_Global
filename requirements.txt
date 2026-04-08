@@ -2,3 +2,5 @@ streamlit
 python-docx
 fpdf2
 plotly
+kaleido==0.2.1
+plotly>=5.0.0
