@@ -1161,10 +1161,13 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
             "striar": {"ru": "Стриарный", "en": "Striatal"}, 
             "callosal-ds": {"ru": "Межполуш Дисконнект", "en": "Callosal"}
         }
-        for code, label in net_map.items():
+        for code, names in net_map.items():
             is_active = any(p.lower() == code.lower() for p in presets)
             bg = "#FF4B4B" if is_active else "#1c1f26"
             tc = "white" if is_active else "#444"
+            
+            # Выбираем язык: если есть перевод - берем, иначе английский
+            label = names.get(lang, names["en"])
             st.markdown(f'<div style="background:{bg}; color:{tc}; padding:2px; border-radius:3px; margin-bottom:2px; text-align:center; font-size:0.65em; font-weight:bold; border:1px solid #333;">{label}</div>', unsafe_allow_html=True)
 
         # 4. МКФ
