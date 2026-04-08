@@ -1049,16 +1049,31 @@ for i, name in enumerate(f_names):
     scores.append(val)
 
 # --- ФУНКЦИЯ ДИАЛОГОВОГО ОКНА ---
-@st.dialog("📄 ИТОГОВЫЙ ПРОТОКОЛ", width="large")
+@st.dialog(" ", width="large")
 def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, scores, f_names, lang):
+    # --- 0. ЛОКАЛИЗАЦИЯ ЗАГОЛОВКА ОКНА ---
+    ui_title = {
+        "ru": "📄 ИТОГОВЫЙ ПРОТОКОЛ",
+        "en": "📄 CLINICAL REPORT",
+        "es": "📄 INFORME CLÍNICO",
+        "pt": "📄 RELATÓRIO CLÍNICO"
+    }.get(lang, "📄 REPORT")
+    st.markdown(f"## {ui_title}")
+
     # --- 1. ЛОГИКА ЯДРА (N, D, Org, Sch) ---
     core_label = "Org"
-    d_presets = ["Дког", "Дгор", "Дгорсом", "Дсом", "Дтр"]
-    has_d_preset = any(p in presets for p in d_presets)
-    if p_type == "9" or p_type == "Дгэ" or has_d_preset: 
+    
+    # Актуальные ключи депрессивного спектра из NeuroDraft 3.0
+    d_presets = ["dep-cog", "dep-grief", "dep-somatic", "dep-anxious", "dep-adjustment"]
+    has_d_preset = any(p.lower() in d_presets for p in presets)
+    
+    # Резкая и четкая логика определения ядра
+    if p_type == "9" or has_d_preset: 
         core_label = "D"
-    elif p_type == "8": core_label = "Sch"
-    elif p_type in ["0", "0т", "0*", "0+", "0-", "00"]: core_label = "N"
+    elif p_type == "8": 
+        core_label = "Sch"
+    elif p_type in ["0", "0т", "0*", "0+", "0-", "00", "0000"]: 
+        core_label = "N"
 
     # --- 2. ЛОГИКА БУСТЕРОВ ДЛЯ БЛОКОВ (NEURO-DRAFT 3.0) ---
     is_organ = p_type in ["1", "2", "3", "4", "5"]
