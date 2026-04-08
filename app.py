@@ -1195,6 +1195,7 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
     with c1:
         from docx import Document
         from docx.shared import Pt, Inches
+        from datetime import datetime
         import re, io, plotly.io as pio
 
         doc = Document()
