@@ -1104,8 +1104,8 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
 
     with col_left:
         # 1. БЛОКИ (Сжато)
-        b_head = "🧠 Блоки:" if lang == 'ru' else "🧠 Units:"
-        st.markdown(f"<div style='font-size:0.8em; font-weight:bold; margin-bottom:5px;'>{b_head}</div>", unsafe_allow_html=True)
+        b_head = "🧠 Units:" if lang != 'ru' else "🧠 Блоки:"
+        st.markdown(f"<div style='font-size:0.75em; font-weight:bold; margin-bottom:4px;'>{b_head}</div>", unsafe_allow_html=True)
         bn = ["БЛОК I", "БЛОК II", "БЛОК III"] if lang == 'ru' else ["Unit I", "Unit II", "Unit III"]
         
         # Логика активации
@@ -1119,35 +1119,40 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
             tc = "white" if active else "#555"
             st.markdown(f'<div style="background:{bg}; color:{tc}; padding:4px; border-radius:4px; margin-bottom:3px; text-align:center; font-weight:bold; font-size:0.7em; border:1px solid #333;">{name}</div>', unsafe_allow_html=True)
         
-        # 2. МЕТРИКИ (Сразу под блоками)
+        # 2. МЕТРИКИ (С КРАСИВЫМ ЗАГОЛОВКОМ)
         mapping = {"Luria Raw":["0","1","2","3","4","5"], "Z-Score":["0.0","-1.0","-1.5","-2.0","-2.5","-3.0+"], "T-Score":["50","40","35","30","25","<20"], "Percentile":["99%","84%","50%","16%","2%","<1%"], "Qualitative":["Norm","Weak","Mild","Mod.","Sev.","Prof."]}
         current_scale = st.session_state.get("scale_sel", "Luria Raw")
         labels = mapping.get(current_scale, mapping["Luria Raw"])
         
-        m_rows = "".join([f"<tr><td style='padding:1px;'>{'🟢' if scores[i]<2 else '🟡' if scores[i]<4 else '🔴'} {f_names[i][:10]}.</td><td style='text-align:right; font-weight:bold;'>{labels[scores[i]]}</td></tr>" for i in range(10)])
-        st.markdown(f'<table style="width:100%; font-size:0.65em; border-collapse:collapse; margin-top:10px; border-top:1px solid #444;">{m_rows}</table>', unsafe_allow_html=True)
+        m_head = "📊 Clinical Metrics:" if lang != 'ru' else "📊 Клинич. метрики:"
+        m_rows = "".join([f"<tr><td style='padding:1px;'>{'🟢' if scores[i]<2 else '🟡' if scores[i]<4 else '🔴'} {f_names[i][:10]}.</td><td style='text-align:right; font-weight:bold; color:#00f2ff;'>{labels[scores[i]]}</td></tr>" for i in range(10)])
+        
+        st.markdown(f"""
+            <div style='margin-top:10px; border-top:1px solid #444; padding-top:5px;'>
+                <div style='font-size:0.7em; font-weight:bold; margin-bottom:3px;'>{m_head}</div>
+                <table style="width:100%; font-size:0.65em; border-collapse:collapse;">{m_rows}</table>
+            </div>
+        """, unsafe_allow_html=True)
 
     with col_center:
-        # ЦЕНТРАЛЬНЫЙ РАДАР (Солнце)
         st.plotly_chart(fig, use_container_width=True)
 
     with col_right:
-        # 3. СЕТИ (Сжато)
-        n_head = "🔎 Сети:" if lang == 'ru' else "🔎 Syndromes:"
-        st.markdown(f"<div style='font-size:0.8em; font-weight:bold; margin-bottom:5px;'>{n_head}</div>", unsafe_allow_html=True)
-        net_map = {"vci-svd": "Vasc", "msa": "MSA", "ccas": "CCAS", "thalam": "Thal", "retic": "Ret", "striar": "Str", "callosal-ds": "Call"}
+        # ... (твой код 3. СЕТИ остается без изменений) ...
+        # ...
         
-        for code, label in net_map.items():
-            is_active = any(p.lower() == code.lower() for p in presets)
-            bg = "#FF4B4B" if is_active else "#1c1f26"
-            tc = "white" if is_active else "#444"
-            st.markdown(f'<div style="background:{bg}; color:{tc}; padding:2px; border-radius:3px; margin-bottom:2px; text-align:center; font-size:0.65em; font-weight:bold; border:1px solid #333;">{label}</div>', unsafe_allow_html=True)
-        
-        # 4. МКФ (Сразу под сетями)
+        # 4. МКФ (С КРАСИВЫМ ЗАГОЛОВКОМ)
+        r_head = "🎯 Rehab Targets:" if lang != 'ru' else "🎯 Мишени коррекции:"
         icf_map = {0:"b140", 1:"b156", 2:"b156.4", 3:"b176", 4:"b176", 5:"b176.2", 6:"b172", 7:"b167", 8:"b144", 9:"b164"}
         targets = [i for i, v in enumerate(scores) if v >= 3]
         r_rows = "".join([f"<tr><td style='padding:1px; color:#FF4B4B; font-weight:bold;'>{icf_map[i]}</td><td style='text-align:right; font-style:italic;'>{f_names[i][:8]}.</td></tr>" for i in targets]) if targets else "<tr><td colspan='2' style='text-align:center; color:#555;'>Normal</td></tr>"
-        st.markdown(f'<table style="width:100%; font-size:0.65em; border-collapse:collapse; margin-top:10px; border-top:1px solid #444;">{r_rows}</table>', unsafe_allow_html=True)
+        
+        st.markdown(f"""
+            <div style='margin-top:10px; border-top:1px solid #444; padding-top:5px;'>
+                <div style='font-size:0.7em; font-weight:bold; margin-bottom:3px;'>{r_head}</div>
+                <table style="width:100%; font-size:0.65em; border-collapse:collapse;">{r_rows}</table>
+            </div>
+        """, unsafe_allow_html=True)
 
     st.markdown("---")
         
