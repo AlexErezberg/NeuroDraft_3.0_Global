@@ -1058,6 +1058,7 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
     st.markdown(f"## {ui_title}")
 
     # --- 1. ЛОГИКА ЯДРА (N, D, Org, Sch) ---
+    max_score = max(scores) if (scores and len(scores) > 0) else 0
     core_label = "Org"
     
     # Актуальные ключи депрессивного спектра из NeuroDraft 3.0
@@ -1076,7 +1077,7 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
             core_label = "N"
 
     # --- 2. ЛОГИКА БУСТЕРОВ ДЛЯ БЛОКОВ (NEURO-DRAFT 3.0) ---
-    is_organ = p_type in ["1", "2", "3", "4", "5"]
+    is_organ = p_type in ["1", "2", "3", "4", "5"] or max_score >= 3
     
     # Блок I (Энергия/Тонус): нейродинамика, апатия, MSA
     b1 = 3 if any(p in ["ndyn", "a-pathy", "msa"] for p in presets) and is_organ else 0
