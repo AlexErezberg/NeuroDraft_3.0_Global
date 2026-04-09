@@ -837,14 +837,7 @@ if not st.session_state["auth"]:
 
 # --- 2. ЛЕВАЯ ПАНЕЛЬ (ПОЯВИТСЯ ТОЛЬКО ПОСЛЕ ПАРОЛЯ) ---
 with st.sidebar:
-    # 1. МОЗГИ (Ужатые)
-    c1, c2, c3 = st.columns([1, 2, 1]) 
-    with c2:
-        try: st.image("brain2.jpg", width=120)
-        except: st.write("🧠")
-
     # --- ВСТАВКА: ВЫБОР ЯЗЫКА ---
-    st.markdown("---")
     # Английский по умолчанию (index=0), Русский в конце
     lang = st.selectbox("🌐 LANGUAGE", ["en", "es", "pt", "ru"], index=0, key="lang_sel")
     
