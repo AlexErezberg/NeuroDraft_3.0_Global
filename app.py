@@ -919,11 +919,11 @@ with st.sidebar:
     # ТВОИ КРЕДИТЫ (Cognicore Systems)
     st.markdown("""
         <div style="background-color: #1c1f26; padding: 10px; border-radius: 10px; border: 1px solid #3d404a; text-align: center; margin-top: 20px;">
-            <p style="color: #808495; font-size: 0.7em; margin: 0;">© 2026 Все права защищены</p>
+            <p style="color: #808495; font-size: 0.7em; margin: 0;">© 2026 All rights reserved.</p>
             <p style="color: #FF4B4B; font-weight: bold; font-size: 0.9em; margin: 5px 0;">NeuroDraftAssistant</p>
-            <p style="color: #ffffff; font-size: 0.75em; margin: 0;">Разработка и методология:<br><b>Cognicore Systems</b></p>
+            <p style="color: #ffffff; font-size: 0.75em; margin: 0;">Developed & Conceptualized by<br><b>CogniCore NeuroSystems</b></p>
             <hr style="margin: 8px 0; border: 0.5px solid #333;">
-            <p style="color: #555; font-size: 0.6em;">Commercial v85.6-STABLE</p>
+            <p style="color: #555; font-size: 0.6em;">Commercial v3.0-STABLE</p>
         </div>
     """, unsafe_allow_html=True)
     
