@@ -1070,7 +1070,10 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
     elif p_type == "8": 
         core_label = "Sch"
     elif p_type in ["0", "0т", "0*", "0+", "0-", "00", "0000"]: 
-        core_label = "N"
+        if max_score >= 3:
+            core_label = "Org"
+        else:
+            core_label = "N"
 
     # --- 2. ЛОГИКА БУСТЕРОВ ДЛЯ БЛОКОВ (NEURO-DRAFT 3.0) ---
     is_organ = p_type in ["1", "2", "3", "4", "5"]
