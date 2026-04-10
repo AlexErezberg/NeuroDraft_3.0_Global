@@ -863,12 +863,28 @@ with st.sidebar:
         if st.button(ui_nav["reset"], type="secondary", use_container_width=True):
             reset_app()
     with c_gde:
+        # 1. Словарь соответствия имен файлов
+        guide_files = {
+            "en": "Guide_EN.pdf",
+            "es": "Guide_ES.pdf",
+            "pt": "Guide_PT.pdf",
+            "ru": "Guide_RU.pdf"
+        }
+        
+        # 2. Подхватываем файл на основе выбранного lang (дефолт — EN)
+        target_file = guide_files.get(lang, "Guide_EN.pdf")
+        
         try:
-            with open("AppGuide.pdf", "rb") as f:
-                # Название кнопки загрузки тоже локализовано
-                st.download_button(ui_nav["guide"], f, "AppGuide.pdf", use_container_width=True)
-        except: 
-            pass
+            with open(target_file, "rb") as f:
+                st.download_button(
+                    label=ui_nav["guide"], 
+                    data=f, 
+                    file_name=target_file, 
+                    use_container_width=True
+                )
+        except FileNotFoundError:
+            # Если файла еще нет в папке, кнопка просто неактивна (или выводит заглушку)
+            st.button(ui_nav["guide"], disabled=True, use_container_width=True, help="File not found")
     
     # --- 2. ЛОКАЛИЗАЦИЯ ПАСПОРТУХИ ---
     p_header = {"ru": "📋 ПАЦИЕНТ", "en": "📋 PATIENT", "es": "📋 PACIENTE", "pt": "📋 PACIENTE"}.get(lang, "📋 PATIENT")
