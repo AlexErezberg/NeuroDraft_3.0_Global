@@ -1284,13 +1284,19 @@ def show_result_dialog(report_text, fio_name, p_type, presets, selected_tags, sc
         else:
             doc.add_paragraph("No significant targets identified.")
 
-        # 5. ТЕКСТ ЗАКЛЮЧЕНИЯ (Болдинг)
+        # 5. ТЕКСТ ЗАКЛЮЧЕНИЯ (Болдинг + Выравнивание по ширине)
+        from docx.enum.text import WD_ALIGN_PARAGRAPH # Важный импорт для алаймента
+        
         doc.add_heading('Interpretation', level=2)
         bold_triggers = ["MoCA:", "MMSE:", "GDS:", "ICF:", "Unit", "БЛОК", "severe", "moderate", "mild", "preserved", " impairment"]
         
         for para_text in report_text.split('\n'):
             if not para_text.strip(): continue
             p = doc.add_paragraph()
+            
+            # ВСТАВЛЯЕМ СЮДА: выравнивание по ширине (Justify)
+            p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+            
             for word in para_text.split(' '):
                 run = p.add_run(word + " ")
                 clean_word = re.sub(r'[^\w\.]', '', word).lower()
