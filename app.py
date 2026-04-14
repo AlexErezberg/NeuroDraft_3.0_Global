@@ -925,6 +925,49 @@ with st.sidebar:
     tag_keys = list(matrix.get("tags", {}).keys())
     selected_tags = st.multiselect(tag_h, tag_keys, key="tags_ms")
 
+    # --- DATA MANAGEMENT ---
+    st.markdown("---")
+    dm_h = {"ru": "📊 Управление данными", "en": "📊 Data Management", "es": "📊 Gestión de datos", "pt": "📊 Gestão de dados"}.get(lang, "Data Management")
+    st.markdown(f"**{dm_h}**")
+
+    # 1. Загрузка (Import)
+    up_h = {"ru": "📂 Загрузить JSON", "en": "📂 Load JSON", "es": "📂 Cargar JSON", "pt": "📂 Carregar JSON"}.get(lang, "Load JSON")
+    uploaded_file = st.file_uploader(up_h, type="json", label_visibility="collapsed")
+    
+    if uploaded_file is not None:
+        try:
+            loaded_data = json.load(uploaded_file)
+            st.success(f"✅ {loaded_data['metadata']['fio']}")
+        except:
+            st.error("❌ Error")
+
+    # 2. Сохранение (Export)
+    dl_h = {"ru": "💾 Сохранить данные", "en": "💾 Save Raw Data", "es": "💾 Guardar datos", "pt": "💾 Salvar dados"}.get(lang, "Save Raw Data")
+    
+    # Собираем текущее состояние для экспорта
+    from datetime import datetime
+    file_ts = datetime.now().strftime("%d%m%Y")
+    current_data = {
+        "metadata": {
+            "fio": fio if 'fio' in locals() else "Patient",
+            "date": datetime.now().strftime("%d.%m.%Y"),
+            "p_type": p_type if 'p_type' in locals() else "0"
+        },
+        "clinical_data": {
+            "scores": scores if 'scores' in locals() else [],
+            "presets": presets,
+            "tags": selected_tags
+        }
+    }
+    
+    st.download_button(
+        label=dl_h,
+        data=json.dumps(current_data, ensure_ascii=False, indent=4),
+        file_name=f"Data_{file_ts}.json",
+        mime="application/json",
+        use_container_width=True
+    )
+    
     # ТВОИ КРЕДИТЫ (Cognicore Systems)
     st.markdown("""
         <div style="background-color: #1c1f26; padding: 10px; border-radius: 10px; border: 1px solid #3d404a; text-align: center; margin-top: 20px;">
