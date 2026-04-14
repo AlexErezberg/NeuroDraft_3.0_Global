@@ -964,6 +964,14 @@ with st.sidebar:
     full_ts = datetime.now().strftime("%d%m%Y_%H%M")
     export_filename = f"{safe_name}_{full_ts}.json"
 
+    # 1. Сначала собираем реальные баллы из ползунков
+    current_scores = []
+    for i in range(10):
+        # Используем твой формат ключа s_{i}_{lang}
+        val = st.session_state.get(f"s_{i}_{lang}", 0)
+        current_scores.append(val)
+
+    # 2. Теперь формируем сам объект для сохранения
     current_data = {
         "metadata": {
             "fio": raw_n,
@@ -971,7 +979,7 @@ with st.sidebar:
             "p_type": p_type if 'p_type' in locals() else "0"
         },
         "clinical_data": {
-            "scores": scores if 'scores' in locals() else [],
+            "scores": current_scores, # <--- ТЕПЕРЬ ТУТ БУДУТ ЦИФРЫ
             "presets": presets,
             "tags": selected_tags
         }
