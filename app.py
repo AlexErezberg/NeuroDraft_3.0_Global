@@ -835,6 +835,28 @@ if not st.session_state["auth"]:
         st.error("❌ Forbidden")
     st.stop() # ОСТАНАВЛИВАЕМ ВСЁ ДО ВВОДА ПАРОЛЯ
 
+    # Подготовка уникального имени файла
+    from datetime import datetime
+    import re
+
+    # 1. Берем ID/ФИО или ставим 'patient'
+    raw_name = fio if (fio and fio.strip()) else "patient"
+    
+    # 2. Санитарная очистка: только буквы, цифры и пробелы, остальное в топку
+    clean_name = re.sub(r'[^\w\s]', '', raw_name).lower()
+    
+    # 3. Сокращаем до "фамилия_инициалы" или просто плотно склеиваем
+    name_parts = clean_name.split()
+    if len(name_parts) > 1:
+        # Берем фамилию + первую букву второго слова (инициал)
+        safe_name = f"{name_parts[0]}_{name_parts[1][0]}"
+    else:
+        safe_name = name_parts[0]
+
+    # 4. Добавляем дату и ТОЧНОЕ ВРЕМЯ (ЧасыМинуты)
+    full_ts = datetime.now().strftime("%d%m%Y_%H%M")
+    final_filename = f"{safe_name}_{full_ts}.json"
+
 # --- 2. ЛЕВАЯ ПАНЕЛЬ (ПОЯВИТСЯ ТОЛЬКО ПОСЛЕ ПАРОЛЯ) ---
 with st.sidebar:
     # --- ВСТАВКА: ВЫБОР ЯЗЫКА ---
@@ -879,7 +901,7 @@ with st.sidebar:
                 st.download_button(
                     label=ui_nav["guide"], 
                     data=f, 
-                    file_name=target_file, 
+                    file_name=final_filename,
                     use_container_width=True
                 )
         except FileNotFoundError:
