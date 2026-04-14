@@ -879,7 +879,7 @@ with st.sidebar:
                 st.download_button(
                     label=ui_nav["guide"], 
                     data=f, 
-                    file_name=final_filename,
+                    file_name=target_file,
                     use_container_width=True
                 )
         except FileNotFoundError:
