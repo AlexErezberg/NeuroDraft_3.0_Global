@@ -807,7 +807,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # --- 1. СЕКРЕТНЫЙ ЗАМОК (В САМОМ ВЕРХУ ПЕРЕД ПРОВЕРКОЙ) ---
-PASSWORD = "1111" # <--- УБЕДИСЬ, ЧТО ОН ТУТ!
+PASSWORD = "6666" # <--- УБЕДИСЬ, ЧТО ОН ТУТ!
 
 if "auth" not in st.session_state:
     st.session_state["auth"] = False
