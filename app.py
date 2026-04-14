@@ -835,28 +835,6 @@ if not st.session_state["auth"]:
         st.error("❌ Forbidden")
     st.stop() # ОСТАНАВЛИВАЕМ ВСЁ ДО ВВОДА ПАРОЛЯ
 
-    # Подготовка уникального имени файла
-    from datetime import datetime
-    import re
-
-    # 1. Берем ID/ФИО или ставим 'patient'
-    raw_name = fio if (fio and fio.strip()) else "patient"
-    
-    # 2. Санитарная очистка: только буквы, цифры и пробелы, остальное в топку
-    clean_name = re.sub(r'[^\w\s]', '', raw_name).lower()
-    
-    # 3. Сокращаем до "фамилия_инициалы" или просто плотно склеиваем
-    name_parts = clean_name.split()
-    if len(name_parts) > 1:
-        # Берем фамилию + первую букву второго слова (инициал)
-        safe_name = f"{name_parts[0]}_{name_parts[1][0]}"
-    else:
-        safe_name = name_parts[0]
-
-    # 4. Добавляем дату и ТОЧНОЕ ВРЕМЯ (ЧасыМинуты)
-    full_ts = datetime.now().strftime("%d%m%Y_%H%M")
-    final_filename = f"{safe_name}_{full_ts}.json"
-
 # --- 2. ЛЕВАЯ ПАНЕЛЬ (ПОЯВИТСЯ ТОЛЬКО ПОСЛЕ ПАРОЛЯ) ---
 with st.sidebar:
     # --- ВСТАВКА: ВЫБОР ЯЗЫКА ---
@@ -949,7 +927,7 @@ with st.sidebar:
 
     # --- DATA MANAGEMENT ---
     st.markdown("---")
-    dm_h = {"ru": "📊 Управление данными", "en": "📊 Data Management", "es": "📊 Gestión de datos", "pt": "📊 Gestão de dados"}.get(lang, "Data Management")
+    dm_h = {"ru": "📊 Управление данными", "en": "📊 Data Management", "es": "📊 Gestión de datos", "pt": "📊 Gestão de datos"}.get(lang, "Data Management")
     st.markdown(f"**{dm_h}**")
 
     # 1. Загрузка (Import)
@@ -966,12 +944,29 @@ with st.sidebar:
     # 2. Сохранение (Export)
     dl_h = {"ru": "💾 Сохранить данные", "en": "💾 Save Raw Data", "es": "💾 Guardar datos", "pt": "💾 Salvar dados"}.get(lang, "Save Raw Data")
     
-    # Собираем текущее состояние для экспорта
+    # ЛОГИКА ИМЕНИ ФАЙЛА
     from datetime import datetime
-    file_ts = datetime.now().strftime("%d%m%Y")
+    import re
+    
+    # Берем ФИО, если его нет в locals или оно пустое — ставим Patient
+    raw_n = fio if ('fio' in locals() and fio and str(fio).strip()) else "Patient"
+    
+    # Чистка от мусора и формирование safe_name
+    clean_n = re.sub(r'[^\w\s]', '', str(raw_n)).lower().split()
+    if len(clean_n) > 1:
+        safe_name = f"{clean_n[0]}_{clean_n[1][0]}"
+    elif len(clean_n) == 1:
+        safe_name = clean_n[0]
+    else:
+        safe_name = "patient"
+
+    # Дата и Время (ЧасыМинуты)
+    full_ts = datetime.now().strftime("%d%m%Y_%H%M")
+    export_filename = f"{safe_name}_{full_ts}.json"
+
     current_data = {
         "metadata": {
-            "fio": fio if 'fio' in locals() else "Patient",
+            "fio": raw_n,
             "date": datetime.now().strftime("%d.%m.%Y"),
             "p_type": p_type if 'p_type' in locals() else "0"
         },
@@ -985,7 +980,7 @@ with st.sidebar:
     st.download_button(
         label=dl_h,
         data=json.dumps(current_data, ensure_ascii=False, indent=4),
-        file_name=f"Data_{file_ts}.json",
+        file_name=export_filename,
         mime="application/json",
         use_container_width=True
     )
