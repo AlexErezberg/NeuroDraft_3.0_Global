@@ -743,7 +743,7 @@ class NeuroDraftAssistant:
 # Загрузка JSON-аккумулятора
 @st.cache_data
 def load_matrix():
-    with open('massive-mulilang.json', 'r', encoding='utf-8-sig') as f:
+    with open('massive-multilang.json', 'r', encoding='utf-8-sig') as f:
         return json.load(f)
 
 matrix = load_matrix()
@@ -841,7 +841,7 @@ with st.sidebar:
     # Английский по умолчанию (index=0), Русский в конце
     lang = st.selectbox("🌐 LANGUAGE", ["en", "es", "pt", "ru"], index=0, key="lang_sel")
     
-    # Сразу тянем переводы заголовков из твоего массива massive-mulilang.json
+    # Сразу тянем переводы заголовков из твоего массива massive-multilang.json
     ui = matrix.get("ui_labels", {})
     status_h = ui.get("status_header", {}).get(lang, "STATUS")
     results_h = ui.get("results_header", {}).get(lang, "RESULTS")
