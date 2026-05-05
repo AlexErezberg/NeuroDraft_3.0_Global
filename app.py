@@ -427,6 +427,28 @@ class NeuroDraftAssistant:
                 # Берем фразу из списка по индексу
                 final.append(self.apply_gender(summ_list[s_idx if s_idx < len(summ_list) else -1], gen, is_endo, lang))
 
+            # --- Слой: ПАТОГЕНЕЗ (Сетевые пресеты) ---
+            # Эти пресеты объясняют "железо" и хабы
+            network_keys = ["thalam", "retic", "striar", "msa", "ccas", "callosal-ds", "vci-svd", "ndyn"]
+            for p in presets:
+                if p in network_keys:
+                    p_concl = adj_lib.get(p, {}).get("conclusion", "")
+                    if p_concl:
+                        # Вставляем сюда, чтобы они шли ПЕРЕД описанием блоков мозга
+                        final.append(self.apply_gender(p_concl, gen, is_endo, lang))
+
+            # --- Слой: ИНСТРУМЕНТАЛЬНЫЕ НАРУШЕНИЯ (Афазии, Агнозии) ---
+            # Эти пресеты детализируют нарушения речи, праксиса, гнозиса
+            instrumental_keys = [
+                "a-sens", "a-eff", "a-dyn", "a-aff", "a-amn", "a-sem", 
+                "v-gnosis", "v-neglect", "apr-dyn", "apr-kin", "apr-con"
+            ]
+            for p in presets:
+                if p in instrumental_keys:
+                    p_concl = adj_lib.get(p, {}).get("conclusion", "")
+                    if p_concl:
+                        final.append(self.apply_gender(p_concl, gen, is_endo, lang))
+            
             # Факторы (Блоки) + Бустеры
             f_a = []
             b1 = 3 if any(p in ["ndyn", "н", "msa"] for p in presets) else 0
@@ -548,12 +570,13 @@ class NeuroDraftAssistant:
 
             # --- ФИКС: ДОБАВЛЯЕМ СПЕЦИФИКУ ИЗ НАДСТРОЕК (Депрессия, Сети и др.) ---
             for p in presets:
-                # Ищем именно поле "conclusion" в твоей библиотеке adj_lib
-                p_conclusion = adj_lib.get(p, {}).get("conclusion", "") 
+                # Список того, что НЕ является аффектом (уже вывели выше)
+                hard_keys = network_keys + instrumental_keys
                 
-                if p_conclusion:
-                    # Прогоняем через гендерную мясорубку и добавляем в финальный список
-                    final.append(self.apply_gender(p_conclusion, gen, is_endo, lang))
+                if p not in hard_keys:
+                    p_concl = adj_lib.get(p, {}).get("conclusion", "") 
+                    if p_concl:
+                        final.append(self.apply_gender(p_concl, gen, is_endo, lang))
             
             # --- 5.3. КЛИНИЧЕСКИЙ РИСК И ВЕРИФИКАЦИЯ (ПРЯМАЯ СКЛЕЙКА) ---
             v_parts = []
