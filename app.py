@@ -67,13 +67,21 @@ class NeuroDraftAssistant:
         if lang == 'ru':
             is_fem = (gender == 'а')
             if is_fem:
-                text = text.replace("ен{g}", "на").replace("{g}", "а")
-                f_map = {"инертен": "инертна", "активен": "активна", "спокоен": "спокойна", "ориентирован": "ориентирована"}
-                for m, f in f_map.items(): text = re.sub(rf"\b{m}\b", f, text)
-                text = text.replace("пациент ", "пациентка ")
+                # Женский род: болен{g} -> больна, обследуем{g} -> обследуемая
+                text = text.replace("ый{g}", "ая").replace("ий{g}", "ая").replace("ен{g}", "на").replace("{g}", "а")
+                
+                # Словарные замены для сложных форм
+                f_map = {"инертен": "инертна", "активен": "активна", "спокоен": "спокойна", "ориентирован": "ориентирована", "пациент": "пациентка"}
+                for m, f in f_map.items(): 
+                    text = re.sub(rf"\b{m}\b", f, text)
             else:
+                # Мужской род: чистим маску и восстанавливаем окончания
+                # Если в базе "обследуем{g}", возвращаем "обследуемый"
+                text = text.replace("ем{g}", "емый").replace("ый{g}", "ый").replace("ий{g}", "ий")
+                # Убираем все остальные маски {g} и правим феминитивы обратно
                 text = text.replace("{g}", "").replace("пациентка", "пациент")
 
+        # Финальная чистка и сборка предложений
         text = re.sub(r"\(.*?\)", "", text).replace("..", ".").replace(" ,", ",").replace(". ,", ". ")
         sentences = [s.strip().capitalize() for s in text.split('.') if s.strip()]
         return ". ".join(sentences) + "." if sentences else ""
