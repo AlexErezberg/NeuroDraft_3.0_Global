@@ -216,6 +216,14 @@ class NeuroDraftAssistant:
                         if res_adj:
                             f_res.append(self.apply_gender(res_adj, gen, is_endo, lang))
 
+            # --- ДОБОР ПРЕСЕТОВ (если что-то не вошло в списки выше) ---
+            for p in presets:
+                p_res = adj_lib.get(p, {}).get("results", "")
+                if p_res:
+                    p_res_gen = self.apply_gender(p_res, gen, is_endo, lang)
+                    if p_res_gen not in f_res: # Чтобы не дублировать ndyn или a-sens
+                        f_res.append(p_res_gen)
+            
             # --- 5. ЗАКЛЮЧЕНИЕ (СИНТЕЗ И ВЕРИФИКАЦИЯ) ---
             final = []
 
@@ -538,6 +546,15 @@ class NeuroDraftAssistant:
             if p_text:
                 final.append(self.apply_gender(p_text, gen, is_endo, lang))
 
+            # --- ФИКС: ДОБАВЛЯЕМ СПЕЦИФИКУ ИЗ НАДСТРОЕК (Депрессия, Сети и др.) ---
+            for p in presets:
+                # Ищем именно поле "conclusion" в твоей библиотеке adj_lib
+                p_conclusion = adj_lib.get(p, {}).get("conclusion", "") 
+                
+                if p_conclusion:
+                    # Прогоняем через гендерную мясорубку и добавляем в финальный список
+                    final.append(self.apply_gender(p_conclusion, gen, is_endo, lang))
+            
             # --- 5.3. КЛИНИЧЕСКИЙ РИСК И ВЕРИФИКАЦИЯ (ПРЯМАЯ СКЛЕЙКА) ---
             v_parts = []
 
