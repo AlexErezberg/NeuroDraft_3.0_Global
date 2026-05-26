@@ -28,7 +28,7 @@ class NeuroDraftAssistant:
         self.sr_db = deep_find(self.lib, "suicide_risk")
         self.nv_db = deep_find(self.lib, "neuro_vectors")
 
-    def run(self, code_str, pr_in="", t_in="", lang='ru', moca=None, mmse=None, gds=None, mri=""):
+    def run_old(self, code_str, pr_in="", t_in="", lang='ru', moca=None, mmse=None, gds=None, mri=""):
         # Прокидываем переменную data для старой логики
         data = self.lib
         try:
@@ -160,12 +160,13 @@ class NeuroDraftAssistant:
             v_db = self.nv_db # Та самая база, из которой паничка работает
         
             for t in tags:
-                        # Ищем значение: сначала в "tags", если нет — в "vectors"
-                        t_val = t_db.get(t) or v_db.get(t)
-            
-            if t_val:
-                # Отправляем сырой список прямо в функцию (она сама рандомизирует)
-                st_raw.append(self.apply_gender(t_val, gen, is_endo, lang))
+                # Ищем значение: сначала в "tags", если нет — в "vectors"
+                t_val = t_db.get(t) or v_db.get(t)
+                
+                # ФИКС: отступ исправлен, логика внутри цикла
+                if t_val:
+                    # Отправляем сырой список прямо в функцию (она сама рандомизирует)
+                    st_raw.append(self.apply_gender(t_val, gen, is_endo, lang))
 
             # Логика ПА (уже не нужна отдельно, но пусть будет для страховки)
             if "па" in tags or "panic" in tags:
@@ -742,31 +743,7 @@ class NeuroDraftAssistant:
 
             # --- ФИНАЛЬНАЯ СБОРКА UI И ВЫВОД ---
             ui = self.lib.get("ui_labels", {})
-            r_label_dict = recom_db.get("label", {})
-            r_h = r_label_dict.get(lang, ui.get('recommendations_header', {}).get(lang, "RECOMMENDATIONS"))
-
-            h1 = ui.get('status_header', {}).get(lang, 'MSE')
-            h2 = ui.get('results_header', {}).get(lang, 'PROFILE')
-            h3 = ui.get('conclusion_header', {}).get(lang, 'SUMMARY')
-
-            rec_text = ""
-            if unique_res:
-                rec_text = f"{r_h.upper()}:\n" + "\n\n".join(unique_res)
-
-            res_summary = " ".join([p.strip() for p in final if p.strip()])
-
-            final_report = (
-                f"{h1}:\n{status_text}\n\n"
-                f"{h2}:\n{' '.join(f_res)}\n\n"
-                f"{h3}:\n{res_summary}\n"
-                f"{icf_block}\n\n"
-                f"{rec_text}"
-            )
-            return final_report
-
-            # --- ФИНАЛЬНАЯ СБОРКА UI И ВЫВОД ---
-            ui = self.lib.get("ui_labels", {})
-
+            
             r_label_dict = recom_db.get("label", {})
             r_h = r_label_dict.get(lang, ui.get('recommendations_header', {}).get(lang, "RECOMMENDATIONS"))
 
@@ -788,8 +765,8 @@ class NeuroDraftAssistant:
                 f"{h1}:\n{status_text}\n\n"
                 f"{h2}:\n{' '.join(f_res)}\n\n"
                 f"{h3}:\n{res_summary}\n"
-                f"{icf_block}"
-                # УДАЛИЛ ПОВТОРНУЮ СТРОКУ f"\n\n{rec_text}" - ОНА УЖЕ В res_summary
+                f"{icf_block}\n\n"
+                f"{rec_text}"
             )
             return final_report
 
