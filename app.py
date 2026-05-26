@@ -93,10 +93,14 @@ class NeuroDraftAssistant:
     def run(self, code_str, pr_in="", t_in="", lang='ru', moca=None, mmse=None, gds=None, mri=""):
         try:
             # --- 1. ПАРСИНГ И ГЕНДЕРНАЯ ГИГИЕНА ---
-            head, s_raw = code_str.split('/')
-            raw_typ = head.rstrip('мж')
+head, s_raw = code_str.split('/')
+            
+            # ФИКС: Убираем из ключа маркеры пола для всех языков (кириллицу и латиницу)
+            raw_typ = head.rstrip('мжМЖMFmf ')
+            
             # Гендер только для RU, для Запада - нейтрально
-            gen = ('а' if head.endswith('ж') else '') if lang == 'ru' else ''
+            gen = ('а' if head.lower().endswith(('ж', 'f')) else '') if lang == 'ru' else ''
+            
             s = [int(x) for x in s_raw if x.isdigit()][:10]
             while len(s) < 10: s.append(0)
 
