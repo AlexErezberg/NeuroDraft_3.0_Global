@@ -93,7 +93,7 @@ class NeuroDraftAssistant:
     def run(self, code_str, pr_in="", t_in="", lang='ru', moca=None, mmse=None, gds=None, mri=""):
         try:
             # --- 1. ПАРСИНГ И ГЕНДЕРНАЯ ГИГИЕНА ---
-head, s_raw = code_str.split('/')
+            head, s_raw = code_str.split('/')
             
             # ФИКС: Убираем из ключа маркеры пола для всех языков (кириллицу и латиницу)
             raw_typ = head.rstrip('мжМЖMFmf ')
