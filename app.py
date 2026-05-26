@@ -127,11 +127,12 @@ class NeuroDraftAssistant:
 
             # --- ЛОГИКА КЛЮЧЕЙ (ОСТАВЛЯЕМ ТВОЮ БРОНЕБОЙНУЮ) ---
             t_k = str(raw_typ).strip()
-            if t_k not in intros:
-                if t_k.isdigit() and int(t_k) in intros:
-                    t_k = int(t_k)
+            intro_k = t_k
+            if intro_k not in intros:
+                if intro_k.isdigit() and str(int(intro_k)) in intros:
+                    intro_k = str(int(intro_k))
                 else:
-                    t_k = "0"
+                    intro_k = "0"
 
             is_endo = (str(t_k) == "8")
             is_organ = str(t_k) in ["1","2","3","4","5"]
@@ -142,9 +143,8 @@ class NeuroDraftAssistant:
 
             # --- 3. СТАТУС (MSE) ---
             st_raw = []
-
-            # 1. INTRO (0, 1, 8...) — Строго из корня
-            raw_intro = intros.get(t_k, intros.get("0", ""))
+            # Используем intro_k для интро, но t_k для всего остального сохраняет свой вес (напр. '3')
+            raw_intro = intros.get(intro_k, intros.get("0", ""))
             st_raw.append(raw_intro)
 
             # 2. CLINICAL BASE (Клиника) — Строго из корня cl_b
@@ -164,12 +164,9 @@ class NeuroDraftAssistant:
                 # В Колабе это срабатывало автоматом, тут помогаем вручную
                 t_val = t_db.get(t) or v_db.get(t)
                 
-                if t_val:
-                    # Тот самый фикс матрешки [], без которого Стримлит "слепнет"
-                    if isinstance(t_val, list) and len(t_val) > 0:
-                        t_val = t_val[0]
-                    
-                    st_raw.append(self.apply_gender(t_val, gen, is_endo, lang))
+            if t_val:
+                # Просто передаем сырой список в apply_gender, он сам выберет случайный dict
+                st_raw.append(self.apply_gender(t_val, gen, is_endo, lang))
 
             # Логика ПА (уже не нужна отдельно, но пусть будет для страховки)
             if "па" in tags or "panic" in tags:
@@ -191,8 +188,16 @@ class NeuroDraftAssistant:
                 st_raw.append(self.apply_gender(raw_sr, gen, is_endo, lang))
 
             # ФИНАЛЬНАЯ СКЛЕЙКА (Гендерная мясорубка)
-            # Прогоняем каждый кусок ЧЕРЕЗ apply_gender один раз!
-            status_parts = [self.apply_gender(p, gen, is_endo, lang).strip().rstrip('.') for p in st_raw if p]
+            status_parts = []
+            for p in st_raw:
+                if not p: continue
+                # Если p - это строка (от тегов/пресетов), мы ее уже перевели, просто добавляем
+                if isinstance(p, str):
+                    status_parts.append(p.strip().rstrip('.'))
+                # Если p - это сырой list/dict из баз, пропускаем через движок
+                else:
+                    status_parts.append(self.apply_gender(p, gen, is_endo, lang).strip().rstrip('.'))
+
             status_text = ". ".join(status_parts) + "."
 
             # --- 4. ПРОФИЛЬ (ВПФ) С БУСТЕРАМИ ---
