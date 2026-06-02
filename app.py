@@ -1093,13 +1093,18 @@ with st.sidebar:
         "MoCA": str(moca if ('moca' in locals() and moca) else ""),
         "MMSE": str(mmse if ('mmse' in locals() and mmse) else ""),
         "GDS": str(gds if ('gds' in locals() and gds) else ""),
-        "Gender": str(gender if 'gender' in locals() else "м"),
+        
+        # ВЫТАСКИВАЕМ ВОЗРАСТ И ПОЛ ИЗ ТВОЕЙ СЕССИИ ИЛИ ЛОКАЛЬНЫХ ПЕРЕМЕННЫХ
+        "Age": str(age if 'age' in locals() else st.session_state.get('age', "")),
+        "Gender": str(gender if 'gender' in locals() else st.session_state.get('gender', "ж")),
+        
         "MRI_Status": str(mri_status_sel),
         "Clinical_Pool": str(pool_sel),
         "TOAST_Subtype": str(toast_sel),
         "Presets": ";".join(presets) if isinstance(presets, list) else str(presets),
         "Clinical_Tags": ";".join(selected_tags) if isinstance(selected_tags, list) else str(selected_tags)
     }
+
     
     for i in range(10):
         research_row[f"domain_{i+1}"] = f"{current_scores[i]:.2f}"
