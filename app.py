@@ -1105,7 +1105,7 @@ with st.sidebar:
         research_row[f"domain_{i+1}"] = f"{current_scores[i]:.2f}"
 
     # Пишем одну строку с шапкой в буфер памяти
-    writer = csv.DictWriter(csv_buffer, fieldnames=headers, delimiter=",")
+    writer = csv.DictWriter(csv_buffer, fieldnames=headers, delimiter=";")
     writer.writeheader()
     writer.writerow(research_row)
 
@@ -1119,6 +1119,7 @@ with st.sidebar:
         # Клеим индивидуальную SPSS-строку
         csv_filename = export_filename.replace(".json", "_spss.csv")
         # Добавляем сигнатуру utf-8-sig для идеального отображения кириллицы в Excel
+        csv_content = "sep=;\n" + csv_buffer.getvalue()
         zip_file.writestr(csv_filename, '\ufeff' + csv_buffer.getvalue())
 
     # Меняем имя и формат итогового файла для скачивания врачом
