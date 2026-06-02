@@ -962,10 +962,51 @@ with st.sidebar:
     tag_keys = list(matrix.get("tags", {}).keys())
     selected_tags = st.multiselect(tag_h, tag_keys, key="tags_ms")
 
-    # --- DATA MANAGEMENT ---
+# --- DATA MANAGEMENT ---
     st.markdown("---")
-    dm_h = {"ru": "📊 Управление данными", "en": "📊 Data Management", "es": "📊 Gestión de datos", "pt": "📊 Gestão de datos"}.get(lang, "Data Management")
+    dm_h = {"ru": "📊 Управление данными & Ресерч", "en": "📊 Data Management & Research", "es": "📊 Gestión de datos", "pt": "📊 Gestão de dados"}.get(lang, "Data Management")
     st.markdown(f"**{dm_h}**")
+
+    # =====================================================================
+    # 🧠 КЛИНИЧЕСКИЙ МОДИФИКАТОР ДЛЯ ОНМК И TOAST (СПЕЦИАЛЬНО ДЛЯ ВББ КЕЙСОВ)
+    # =====================================================================
+    st.markdown("### 🏥 Vascular & Stroke Modifiers (SPSS)")
+    
+    # Локализация подписей для селекторов
+    lbl_mri_st = {"ru": "Статус КТ/МРТ снимка", "en": "CT/MRI Scan Status"}.get(lang, "CT/MRI Scan Status")
+    lbl_pool = {"ru": "Сосудистый бассейн (клинически)", "en": "Vascular Territory (clinical)"}.get(lang, "Vascular Territory")
+    lbl_toast = {"ru": "Подтип по TOAST", "en": "TOAST Subtype"}.get(lang, "TOAST Subtype")
+
+    col_m1, col_m2, col_m3 = st.columns(3)
+    
+    with col_m1:
+        mri_status_opt = {
+            "0": {"ru": "🟢 Норма / Очагов нет", "en": "🟢 Normal / No lesions"},
+            "1": {"ru": "🔴 Очаг верифицирован", "en": "🔴 Lesion verified"},
+            "2": {"ru": "🟡 КТ-негативный (Острый период)", "en": "🟡 CT-negative (Acute stroke)"}
+        }
+        mri_status_sel = st.selectbox(lbl_mri_st, options=list(mri_status_opt.keys()), format_func=lambda x: mri_status_opt[x].get(lang, mri_status_opt[x]["en"]))
+
+    with col_m2:
+        pool_opt = {
+            "0": {"ru": "⚪ Нет сосудистой патологии", "en": "⚪ Non-vascular / None"},
+            "1": {"ru": "🧠 КА (Каротидный бассейн)", "en": "🧠 ICA (Internal Carotid)"},
+            "2": {"ru": "🌊 ВББ (Вертебро-базилярный)", "en": "🌊 VBA (Vertebro-Basilar)"}
+        }
+        pool_sel = st.selectbox(lbl_pool, options=list(pool_opt.keys()), format_func=lambda x: pool_opt[x].get(lang, pool_opt[x]["en"]))
+
+    with col_m3:
+        toast_opt = {
+            "0": {"ru": "⚪ Не применимо", "en": "⚪ Not Applicable"},
+            "1": {"ru": "1. LAA (Атеротромботический)", "en": "1. LAA (Large-artery)"},
+            "2": {"ru": "2. CE (Кардиоэмболический)", "en": "2. CE (Cardioembolic)"},
+            "3": {"ru": "3. SVO (Лакунарный)", "en": "3. SVO (Small-vessel)"},
+            "4": {"ru": "4. ODE (Другая этиология)", "en": "4. ODE (Other determined)"},
+            "5": {"ru": "5. UD (Неуточненный подтип)", "en": "5. UD (Undetermined)"}
+        }
+        toast_sel = st.selectbox(lbl_toast, options=list(toast_opt.keys()), format_func=lambda x: toast_opt[x].get(lang, toast_opt[x]["en"]))
+    
+    st.markdown("---")
 
     # 1. Загрузка (Import)
     up_h = {"ru": "📂 Загрузить JSON", "en": "📂 Load JSON", "es": "📂 Cargar JSON", "pt": "📂 Carregar JSON"}.get(lang, "Load JSON")
@@ -984,6 +1025,8 @@ with st.sidebar:
     # ЛОГИКА ИМЕНИ ФАЙЛА
     from datetime import datetime
     import re
+    import os
+    import csv
     
     # Берем ФИО, если его нет в locals или оно пустое — ставим Patient
     raw_n = fio if ('fio' in locals() and fio and str(fio).strip()) else "Patient"
@@ -1004,11 +1047,10 @@ with st.sidebar:
     # 1. Сначала собираем реальные баллы из ползунков
     current_scores = []
     for i in range(10):
-        # Используем твой формат ключа s_{i}_{lang}
         val = st.session_state.get(f"s_{i}_{lang}", 0)
         current_scores.append(val)
 
-    # 2. Теперь формируем сам объект для сохранения
+    # 2. Формируем клинический объект для сохранения одного пациента (Твой JSON)
     current_data = {
         "metadata": {
             "fio": raw_n,
@@ -1016,11 +1058,58 @@ with st.sidebar:
             "p_type": p_type if 'p_type' in locals() else "0"
         },
         "clinical_data": {
-            "scores": current_scores, # <--- ТЕПЕРЬ ТУТ БУДУТ ЦИФРЫ
+            "scores": current_scores,
             "presets": presets,
-            "tags": selected_tags
+            "tags": selected_tags,
+            "research_modifiers": {
+                "mri_status": mri_status_sel,
+                "clinical_pool": pool_sel,
+                "toast_subtype": toast_sel
+            }
         }
     }
+
+    # =====================================================================
+    # 🔒 ENTERPRISE/RESEARCH BLOCK: АВТОМАТИЧЕСКАЯ СБОРКА SPSS-МАТРИЦЫ V3
+    # =====================================================================
+    spss_archive_path = "neurodraft_spss_archive.csv"
+    slider_columns = [f"domain_{i+1}" for i in range(10)]
+    
+    headers = [
+        "Patient_ID", "Date", "Profile_Type", "Scale_Type", 
+        "MoCA", "MMSE", "GDS", "Gender",
+        "MRI_Status", "Clinical_Pool", "TOAST_Subtype"
+    ] + slider_columns + ["Presets", "Clinical_Tags"]
+
+    research_row = {
+        "Patient_ID": str(raw_n),
+        "Date": datetime.now().strftime("%Y-%m-%d"),
+        "Profile_Type": str(p_type if 'p_type' in locals() else "0"),
+        "Scale_Type": str(scaleType if 'scaleType' in locals() else "Luria"),
+        "MoCA": str(moca if ('moca' in locals() and moca) else ""),
+        "MMSE": str(mmse if ('mmse' in locals() and mmse) else ""),
+        "GDS": str(gds if ('gds' in locals() and gds) else ""),
+        "Gender": str(gender if 'gender' in locals() else "м"),
+        "MRI_Status": str(mri_status_sel),   # Числовой код из выпадающего списка
+        "Clinical_Pool": str(pool_sel),       # Числовой код бассейна (ВББ)
+        "TOAST_Subtype": str(toast_sel),     # Числовой код TOAST (UD)
+        "Presets": ";".join(presets) if isinstance(presets, list) else str(presets),
+        "Clinical_Tags": ";".join(selected_tags) if isinstance(selected_tags, list) else str(selected_tags)
+    }
+    
+    for i in range(10):
+        research_row[f"domain_{i+1}"] = f"{current_scores[i]:.2f}"
+
+    file_exists = os.path.isfile(spss_archive_path)
+    try:
+        with open(spss_archive_path, mode="a", encoding="utf-8-sig", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=headers, delimiter=",")
+            if not file_exists:
+                writer.writeheader()
+            writer.writerow(research_row)
+    except Exception as e:
+        st.sidebar.error(f"⚠️ Research DB Error: {e}")
+    # =====================================================================
     
     st.download_button(
         label=dl_h,
