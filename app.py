@@ -1079,11 +1079,13 @@ with st.sidebar:
     csv_buffer = io.StringIO()
     slider_columns = [f"domain_{i+1}" for i in range(10)]
     
+    # ТЕПЕРЬ ШАПКА ТАБЛИЦЫ ТОЧНО ЗНАЕТ ПРО ВОЗРАСТ
     headers = [
         "Patient_ID", "Date", "Profile_Type", "Scale_Type", 
-        "MoCA", "MMSE", "GDS", "Gender",
+        "MoCA", "MMSE", "GDS", "Gender", "Age", # <-- ДОБАВИЛИ СЮДА AGE
         "MRI_Status", "Clinical_Pool", "TOAST_Subtype"
     ] + slider_columns + ["Presets", "Clinical_Tags"]
+
 
     research_row = {
         "Patient_ID": str(raw_n),
