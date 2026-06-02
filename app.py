@@ -1070,9 +1070,13 @@ with st.sidebar:
     }
 
     # =====================================================================
-    # 🔒 ENTERPRISE/RESEARCH BLOCK: АВТОМАТИЧЕСКАЯ СБОРКА SPSS-МАТРИЦЫ V3
+    # 📦 БЕЗ ПАЛОК И БУБНОВ: СБОРКА СТРОКИ SPSS В ОПЕРАТИВНОЙ ПАМЯТИ
     # =====================================================================
-    spss_archive_path = "neurodraft_spss_archive.csv"
+    import io
+    import zipfile
+
+    # Готовим структуру текстового файла CSV прямо в памяти
+    csv_buffer = io.StringIO()
     slider_columns = [f"domain_{i+1}" for i in range(10)]
     
     headers = [
@@ -1090,9 +1094,9 @@ with st.sidebar:
         "MMSE": str(mmse if ('mmse' in locals() and mmse) else ""),
         "GDS": str(gds if ('gds' in locals() and gds) else ""),
         "Gender": str(gender if 'gender' in locals() else "м"),
-        "MRI_Status": str(mri_status_sel),   # Числовой код из выпадающего списка
-        "Clinical_Pool": str(pool_sel),       # Числовой код бассейна (ВББ)
-        "TOAST_Subtype": str(toast_sel),     # Числовой код TOAST (UD)
+        "MRI_Status": str(mri_status_sel),
+        "Clinical_Pool": str(pool_sel),
+        "TOAST_Subtype": str(toast_sel),
         "Presets": ";".join(presets) if isinstance(presets, list) else str(presets),
         "Clinical_Tags": ";".join(selected_tags) if isinstance(selected_tags, list) else str(selected_tags)
     }
@@ -1100,22 +1104,32 @@ with st.sidebar:
     for i in range(10):
         research_row[f"domain_{i+1}"] = f"{current_scores[i]:.2f}"
 
-    file_exists = os.path.isfile(spss_archive_path)
-    try:
-        with open(spss_archive_path, mode="a", encoding="utf-8-sig", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=headers, delimiter=",")
-            if not file_exists:
-                writer.writeheader()
-            writer.writerow(research_row)
-    except Exception as e:
-        st.sidebar.error(f"⚠️ Research DB Error: {e}")
+    # Пишем одну строку с шапкой в буфер памяти
+    writer = csv.DictWriter(csv_buffer, fieldnames=headers, delimiter=",")
+    writer.writeheader()
+    writer.writerow(research_row)
+
+    # Упаковываем JSON и CSV в один ZIP-архив на лету
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+        # Клеим JSON файл пациента
+        json_string = json.dumps(current_data, ensure_ascii=False, indent=4)
+        zip_file.writestr(export_filename, json_string)
+        
+        # Клеим индивидуальную SPSS-строку
+        csv_filename = export_filename.replace(".json", "_spss.csv")
+        # Добавляем сигнатуру utf-8-sig для идеального отображения кириллицы в Excel
+        zip_file.writestr(csv_filename, '\ufeff' + csv_buffer.getvalue())
+
+    # Меняем имя и формат итогового файла для скачивания врачом
+    zip_filename = export_filename.replace(".json", "_archive.zip")
     # =====================================================================
     
     st.download_button(
         label=dl_h,
-        data=json.dumps(current_data, ensure_ascii=False, indent=4),
-        file_name=export_filename,
-        mime="application/json",
+        data=zip_buffer.getvalue(),
+        file_name=zip_filename,
+        mime="application/zip",
         use_container_width=True
     )
     
