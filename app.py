@@ -1080,7 +1080,6 @@ with st.sidebar:
     slider_columns = [f"domain_{i+1}" for i in range(10)]
     
     # ТЕПЕРЬ ШАПКА ТАБЛИЦЫ ТОЧНО ЗНАЕТ ПРО ВОЗРАСТ
-    # ТЕПЕРЬ ШАПКА ТАБЛИЦЫ ТОЧНО ЗНАЕТ ПРО ВОЗРАСТ
     headers = [
         "Patient_ID", "Date", "Profile_Type", "Scale_Type", 
         "MoCA", "MMSE", "GDS", "Gender", "Age", 
@@ -1113,7 +1112,7 @@ with st.sidebar:
             final_age = str(st.session_state.get(var_name)).strip()
             break
 
-    # Сборка строки для SPSS-сыроварни
+    # --- СБОРКА СТРОКИ ДЛЯ SPSS-СЫРОВАРНИ (НАПРЯМУЮ ИЗ ПАСПОРТУХИ) ---
     research_row = {
         "Patient_ID": str(raw_n),
         "Date": datetime.now().strftime("%Y-%m-%d"),
@@ -1123,9 +1122,11 @@ with st.sidebar:
         "MMSE": str(mmse if ('mmse' in locals() and mmse) else ""),
         "GDS": str(gds if ('gds' in locals() and gds) else ""),
         
-        # Записываем перехваченные и выверенные данные
-        "Age": final_age,
-        "Gender": final_gender,
+        # Вытягиваем возраст напрямую, без промахов
+        "Age": str(age if 'age' in locals() else "65"),
+        
+        # Жесткий и лаконичный фильтр пола для мультиязычных букв (м/ж/M/F)
+        "Gender": "м" if ('p_gen' in locals() and str(p_gen).strip().upper().startswith(('М', 'M'))) else "ж",
         
         "MRI_Status": str(mri_status_sel),
         "Clinical_Pool": str(pool_sel),
@@ -1133,6 +1134,7 @@ with st.sidebar:
         "Presets": ";".join(presets) if isinstance(presets, list) else str(presets),
         "Clinical_Tags": ";".join(selected_tags) if isinstance(selected_tags, list) else str(selected_tags)
     }
+
    
     for i in range(10):
         research_row[f"domain_{i+1}"] = f"{current_scores[i]:.2f}"
