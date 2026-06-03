@@ -1080,13 +1080,40 @@ with st.sidebar:
     slider_columns = [f"domain_{i+1}" for i in range(10)]
     
     # ТЕПЕРЬ ШАПКА ТАБЛИЦЫ ТОЧНО ЗНАЕТ ПРО ВОЗРАСТ
+    # ТЕПЕРЬ ШАПКА ТАБЛИЦЫ ТОЧНО ЗНАЕТ ПРО ВОЗРАСТ
     headers = [
         "Patient_ID", "Date", "Profile_Type", "Scale_Type", 
-        "MoCA", "MMSE", "GDS", "Gender", "Age", # <-- ДОБАВИЛИ СЮДА AGE
+        "MoCA", "MMSE", "GDS", "Gender", "Age", 
         "MRI_Status", "Clinical_Pool", "TOAST_Subtype"
     ] + slider_columns + ["Presets", "Clinical_Tags"]
 
+    # --- УМНЫЙ ПЕРЕХВАТ ПОЛА ИЗ ВСЕХ ВОЗМОЖНЫХ ПЕРЕМЕННЫХ И СЕССИИ ---
+    # Собираем все, что лежит в переменных или стейте под любыми именами
+    raw_gender_val = ""
+    for var_name in ['gender', 'sex', 'p_gender', 'patient_gender', 'gender_radio']:
+        if var_name in locals() and locals()[var_name]:
+            raw_gender_val = str(locals()[var_name]).strip().lower()
+            break
+        if st.session_state.get(var_name):
+            raw_gender_val = str(st.session_state.get(var_name)).strip().lower()
+            break
 
+    # Кодируем пол жестко: если есть маркеры "м", "m" или "male" — это "м", иначе "ж"
+    final_gender = "ж"
+    if any(m in raw_gender_val for m in ["м", "m", "male", "муж", "man"]):
+        final_gender = "м"
+
+    # --- УМНЫЙ ПЕРЕХВАТ ВОЗРАСТА ---
+    final_age = ""
+    for var_name in ['age', 'p_age', 'patient_age', 'age_input']:
+        if var_name in locals() and locals()[var_name]:
+            final_age = str(locals()[var_name]).strip()
+            break
+        if st.session_state.get(var_name):
+            final_age = str(st.session_state.get(var_name)).strip()
+            break
+
+    # Сборка строки для SPSS-сыроварни
     research_row = {
         "Patient_ID": str(raw_n),
         "Date": datetime.now().strftime("%Y-%m-%d"),
@@ -1096,9 +1123,9 @@ with st.sidebar:
         "MMSE": str(mmse if ('mmse' in locals() and mmse) else ""),
         "GDS": str(gds if ('gds' in locals() and gds) else ""),
         
-        # ВЫТАСКИВАЕМ ВОЗРАСТ И ПОЛ ИЗ ТВОЕЙ СЕССИИ ИЛИ ЛОКАЛЬНЫХ ПЕРЕМЕННЫХ
-        "Age": str(age if 'age' in locals() else st.session_state.get('age', "")),
-        "Gender": str(gender if 'gender' in locals() else st.session_state.get('gender', "ж")),
+        # Записываем перехваченные и выверенные данные
+        "Age": final_age,
+        "Gender": final_gender,
         
         "MRI_Status": str(mri_status_sel),
         "Clinical_Pool": str(pool_sel),
@@ -1106,8 +1133,7 @@ with st.sidebar:
         "Presets": ";".join(presets) if isinstance(presets, list) else str(presets),
         "Clinical_Tags": ";".join(selected_tags) if isinstance(selected_tags, list) else str(selected_tags)
     }
-
-    
+   
     for i in range(10):
         research_row[f"domain_{i+1}"] = f"{current_scores[i]:.2f}"
 
