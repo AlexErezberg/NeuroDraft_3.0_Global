@@ -9,6 +9,7 @@ import plotly.io as pio
 import kaleido
 from docx import Document
 
+
 data = {}
 
 class NeuroDraftAssistant:
